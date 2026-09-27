@@ -51,7 +51,7 @@ main {
     width: 100%;
     min-height: 100vh;
 
-    padding: 32px;
+    padding: 64px;
 
     text-align: center;
 }
@@ -95,8 +95,8 @@ main {
 .icon img {
     display: block;
 
-    width: 150px;
-    max-width: 150px;
+    width: 200px;
+    max-width: 200px;
     height: auto;
 
     object-fit: contain;
@@ -109,15 +109,15 @@ main {
 
 .links {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1000px;
 
-    margin: 55px auto 0;
+    margin: 75px auto 0;
 }
 
 .links p {
     margin: 0;
 
-    font-size: 52px;
+    font-size: 72px;
     font-weight: 700;
     line-height: 1.05;
 
