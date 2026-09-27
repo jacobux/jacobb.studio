@@ -195,7 +195,7 @@ main {
     .links p {
         display: flex;
         flex-direction: column;
-        align-items: left;
+        align-items: center;
 
         margin: 0;
 
