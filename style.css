@@ -117,8 +117,8 @@ main {
 .links p {
     margin: 0;
 
-    font-size: 102px;
-    font-weight: 800;
+    font-size: 84px;
+    font-weight: 700;
     line-height: 1.05;
 
     letter-spacing: -0.05em;
@@ -199,11 +199,11 @@ main {
 
         margin: 0;
 
-        font-size: 52px;
+        font-size: 84px;
         font-weight: 700;
-        line-height: 0.95;
+        line-height: 1.05;
 
-        letter-spacing: -0.045em;
+        letter-spacing: -0.05em;
     }
 
     .links a {
