@@ -72,7 +72,7 @@ main {
 .logo img {
     display: block;
 
-    width: 500px;
+    width: 600px;
     max-width: 80vw;
     height: auto;
 }
@@ -117,11 +117,11 @@ main {
 .links p {
     margin: 0;
 
-    font-size: 84px;
-    font-weight: 700;
+    font-size: 102px;
+    font-weight: 800;
     line-height: 1.05;
 
-    letter-spacing: -0.045em;
+    letter-spacing: -0.05em;
 }
 
 
