@@ -80,16 +80,12 @@ main {
 .icon {
     display: flex;
     justify-content: center;
-    align-items: center;
-
     width: 100%;
-
-    margin-top: 38px;
+    margin-top: 40px;
 }
 
 .icon img {
     display: block;
-
     width: 150px;
     height: auto;
 }
