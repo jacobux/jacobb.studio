@@ -164,6 +164,25 @@ main {
     color: #FF1609;
 }
 
+  .back_nav {
+    position: absolute;
+
+    margin: 38px;
+}
+
+.back_nav p {
+
+    font-size: 84px;
+    font-weight: 700;
+    line-height: 1.05;
+
+    letter-spacing: -0.05em;
+}
+
+.back_nav a:hover {
+    color: #FF1609;
+}
+
 
 /* =========================================================
    MOBILE
