@@ -274,16 +274,13 @@ main {
         max-width: 330px;
     }
 
-   .side-animation {
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 180px;
+   .topani {
+    top: 0px;
+    width: 1000px;
     z-index: 1000;
 }
 
-.side-animation img {
+.topani img {
     display: block;
     width: 100%;
     height: auto;
