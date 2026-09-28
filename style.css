@@ -286,13 +286,16 @@ main {
        Top Video
        ------------------------- */
 
-    .top-video {
-        width: 50%;
-        height: 80px;
+.top-video {
+    width: 50%;
+    margin: -64px auto 0;
+}
 
-        margin-top: 35px;
-    }
-
+.top-video video {
+    display: block;
+    width: 100%;
+    height: auto;
+}
 
     /* -------------------------
        Bunny
