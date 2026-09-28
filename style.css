@@ -314,14 +314,11 @@ main {
 
   .back_nav {
     position: absolute;
-    width: 100%;
-    max-width: 900px;
 
-    margin: 38px auto 0;
+    margin: 38px;
 }
 
 .back_nav p {
-    margin: 0;
 
     font-size: 84px;
     font-weight: 700;
