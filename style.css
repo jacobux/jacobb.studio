@@ -79,6 +79,29 @@ main {
 
 
 /* =========================================================
+   TOP VIDEO
+   ========================================================= */
+
+.top-video {
+    width: 50%;
+    height: 120px;
+
+    margin: 40px auto 0;
+
+    overflow: hidden;
+}
+
+.top-video video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+/* =========================================================
    BUNNY
    ========================================================= */
 
@@ -109,7 +132,7 @@ main {
 
 .links {
     width: 100%;
-    max-width: 600px;
+    max-width: 1400px;
 
     margin: 38px auto 0;
 }
@@ -125,7 +148,9 @@ main {
 }
 
 
-/* Individual links */
+/* =========================================================
+   INDIVIDUAL LINKS
+   ========================================================= */
 
 .links a {
     color: #000000;
@@ -138,7 +163,9 @@ main {
 }
 
 
-/* Hover */
+/* =========================================================
+   HOVER
+   ========================================================= */
 
 .links a:hover {
     color: #FF1609;
@@ -153,7 +180,7 @@ main {
 
     main {
         padding: 20px;
-       
+
         text-align: center;
     }
 
@@ -165,6 +192,18 @@ main {
     .logo img {
         width: 400px;
         max-width: 92vw;
+    }
+
+
+    /* -------------------------
+       Top Video
+       ------------------------- */
+
+    .top-video {
+        width: 50%;
+        height: 100px;
+
+        margin-top: 40px;
     }
 
 
@@ -244,6 +283,18 @@ main {
 
 
     /* -------------------------
+       Top Video
+       ------------------------- */
+
+    .top-video {
+        width: 50%;
+        height: 80px;
+
+        margin-top: 35px;
+    }
+
+
+    /* -------------------------
        Bunny
        ------------------------- */
 
@@ -273,15 +324,4 @@ main {
     .links a:first-child {
         max-width: 330px;
     }
-
-.top-video {
-    width: 50%;
-    height: 120px;
-    overflow: hidden;
-}
-
-.top-video video {
-    width: 50%;
-    height: 100%;
-    object-fit: cover;
 }
