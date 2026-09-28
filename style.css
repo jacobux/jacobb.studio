@@ -77,6 +77,22 @@ main {
     height: auto;
 }
 
+.logo2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+}
+
+.logo2 img {
+    display: block;
+
+    width: 800px;
+    max-width: 80vw;
+    height: auto;
+}
+
 
 /* =========================================================
    BUNNY
@@ -296,10 +312,10 @@ main {
 }
 
 
-   .back_nav {  
-   position: absolute;
-    z-index: 10;
-    overflow: hidden;
+  .back_nav {
+    position: absolute;
+    width: 100%;
+    max-width: 900px;
 
     margin: 38px auto 0;
 }
@@ -312,4 +328,8 @@ main {
     line-height: 1.05;
 
     letter-spacing: -0.05em;
+}
+
+.back_nav a:hover {
+    color: #FF1609;
 }
