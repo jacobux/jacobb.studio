@@ -294,3 +294,22 @@ main {
         max-width: 330px;
     }
 }
+
+
+   .back_nav {  
+   position: absolute;
+    z-index: 10;
+    overflow: hidden;
+
+    margin: 38px auto 0;
+}
+
+.back_nav p {
+    margin: 0;
+
+    font-size: 84px;
+    font-weight: 700;
+    line-height: 1.05;
+
+    letter-spacing: -0.05em;
+}
