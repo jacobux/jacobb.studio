@@ -276,12 +276,12 @@ main {
 
    .topani {
     top: 0px;
-    width: 1000px;
+    width: 300px;
     z-index: 1000;
 }
 
 .topani img {
     display: block;
-    width: 100%;
+    width: 60%;
     height: auto;
 }
