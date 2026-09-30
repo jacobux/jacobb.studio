@@ -1,12 +1,11 @@
 /* =========================================================
-   PAGE LOADER
-   SPIRALLING / CLEAN CIRCULAR PARTICLES
+   PAGE LOADER + SPIRALLING PARTICLE TRAIL
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
 
 if (!loader) {
-    console.warn("Page loader not found.");
+    console.warn("No .page-loader found.");
 } else {
 
     /* =====================================================
@@ -33,15 +32,20 @@ if (!loader) {
 
     const DURATION = 2000;
 
+    /*
+     * When particles begin appearing.
+     */
     const TRAIL_START = 1250;
 
+    /*
+     * Fewer particles.
+     */
+    const MAX_PARTICLES = 30;
 
     /*
-     * FEWER PARTICLES
+     * Only one particle is created per frame.
      */
     const PARTICLES_PER_FRAME = 1;
-
-    const MAX_PARTICLES = 30;
 
 
     let particles = [];
@@ -49,7 +53,7 @@ if (!loader) {
 
 
     /* =====================================================
-       CANVAS SIZE
+       CANVAS RESIZE
        ===================================================== */
 
     function resizeCanvas() {
@@ -112,64 +116,76 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
+        /*
+         * Don't create particles outside the viewport.
+         */
         if (
-            edgeY < -40 ||
-            edgeY > window.innerHeight + 40
+            edgeY < -50 ||
+            edgeY > window.innerHeight + 50
         ) {
             return;
         }
 
 
         /* =================================================
-           SIZE
+           RANDOM SIZE
            ================================================= */
 
         let size;
 
-        const r =
+        const random =
             Math.random();
 
 
-        if (r < 0.45) {
+        /*
+         * 45% small
+         */
+        if (random < 0.45) {
 
-            /*
-             * Small
-             */
             size =
                 Math.random() * 4 + 4;
+        }
 
-        } else if (r < 0.78) {
 
-            /*
-             * Medium
-             */
+        /*
+         * 33% medium
+         */
+        else if (random < 0.78) {
+
             size =
                 Math.random() * 7 + 7;
+        }
 
-        } else if (r < 0.95) {
 
-            /*
-             * Large
-             */
+        /*
+         * 17% large
+         */
+        else if (random < 0.95) {
+
             size =
                 Math.random() * 11 + 12;
+        }
 
-        } else {
 
-            /*
-             * VERY LARGE
-             */
+        /*
+         * 5% HUGE
+         */
+        else {
+
             size =
                 Math.random() * 15 + 24;
         }
 
 
         /* =================================================
-           PARTICLE
+           CREATE PARTICLE
            ================================================= */
 
         particles.push({
 
+            /*
+             * Spawn somewhere along the red edge.
+             */
             x:
                 Math.random() *
                 window.innerWidth,
@@ -178,13 +194,16 @@ if (!loader) {
                 edgeY,
 
 
+            /*
+             * Size.
+             */
             size:
                 size,
 
 
-            /* ---------------------------------------------
+            /* =================================================
                MOVEMENT
-               --------------------------------------------- */
+               ================================================= */
 
             /*
              * Initial sideways movement.
@@ -194,7 +213,7 @@ if (!loader) {
                 2.5,
 
             /*
-             * Strong initial downward movement.
+             * Strong downward movement.
              */
             velocityY:
                 Math.random() * 3.5 +
@@ -202,15 +221,17 @@ if (!loader) {
 
 
             /*
-             * Curved / spiral force.
+             * Curve force.
+             *
+             * This gives the particle its
+             * spiral / wandering motion.
              */
             curve:
                 (Math.random() - 0.5) *
                 0.18,
 
-
             /*
-             * Slowly changes the curve.
+             * Curve changes slightly over time.
              */
             curveVelocity:
                 (Math.random() - 0.5) *
@@ -219,6 +240,9 @@ if (!loader) {
 
             /*
              * Momentum retention.
+             *
+             * 1.0 = never slows down.
+             * Lower = slows faster.
              */
             friction:
                 0.965,
@@ -233,9 +257,9 @@ if (!loader) {
                 0.015,
 
 
-            /* ---------------------------------------------
+            /* =================================================
                ROTATION
-               --------------------------------------------- */
+               ================================================= */
 
             rotation:
                 Math.random() *
@@ -247,10 +271,16 @@ if (!loader) {
                 0.08,
 
 
-            /* ---------------------------------------------
-               PHASES
-               --------------------------------------------- */
+            /* =================================================
+               PHASE
+               ================================================= */
 
+            /*
+             * travel
+             * settle
+             * linger
+             * pop
+             */
             phase:
                 "travel",
 
@@ -259,7 +289,7 @@ if (!loader) {
 
 
             /*
-             * Travel before settling.
+             * How long it travels.
              */
             travelTime:
                 Math.random() * 12 +
@@ -267,7 +297,7 @@ if (!loader) {
 
 
             /*
-             * Transition to round.
+             * How long it takes to become round.
              */
             settleTime:
                 Math.random() * 7 +
@@ -283,15 +313,15 @@ if (!loader) {
 
 
             /*
-             * Quick pop.
+             * Pop duration.
              */
             popTime:
                 7,
 
 
-            /* ---------------------------------------------
+            /* =================================================
                SHAPE
-               --------------------------------------------- */
+               ================================================= */
 
             scaleX:
                 0.45,
@@ -307,7 +337,7 @@ if (!loader) {
 
 
     /* =====================================================
-       GET MOVING RED EDGE
+       GET RED LINE POSITION
        ===================================================== */
 
     function getLoaderEdge() {
@@ -315,6 +345,9 @@ if (!loader) {
         const rect =
             loader.getBoundingClientRect();
 
+        /*
+         * The moving top edge of the red loader.
+         */
         return rect.top;
     }
 
@@ -327,14 +360,14 @@ if (!loader) {
 
         particles =
             particles.filter(
-                particle => {
+                function (particle) {
 
 
                 particle.phaseTime += 1;
 
 
                 /* =================================================
-                   PHASE 1 — TRAVEL / SPIRAL
+                   PHASE 1 — TRAVEL
                    ================================================= */
 
                 if (
@@ -342,7 +375,7 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Curve the particle's path.
+                     * Add curve to horizontal movement.
                      */
                     particle.velocityX +=
                         particle.curve;
@@ -356,7 +389,7 @@ if (!loader) {
 
 
                     /*
-                     * Move.
+                     * Move particle.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -366,7 +399,7 @@ if (!loader) {
 
 
                     /*
-                     * Gradually lose momentum.
+                     * Retain most of the momentum.
                      */
                     particle.velocityX *=
                         particle.friction;
@@ -376,22 +409,22 @@ if (!loader) {
 
 
                     /*
-                     * Tiny gravity.
+                     * Small gravitational force.
                      */
                     particle.velocityY +=
                         particle.gravity;
 
 
                     /*
-                     * Rotate as it moves.
+                     * Rotate.
                      */
                     particle.rotation +=
                         particle.rotationSpeed;
 
 
-                    /* ---------------------------------------------
+                    /* =================================================
                        STRETCH BASED ON SPEED
-                       --------------------------------------------- */
+                       ================================================= */
 
                     const speed =
                         Math.sqrt(
@@ -403,7 +436,7 @@ if (!loader) {
 
 
                     /*
-                     * Fast = stretched.
+                     * Fast = long.
                      * Slow = round.
                      */
                     const stretch =
@@ -421,15 +454,12 @@ if (!loader) {
                         Math.max(
                             0.32,
                             1 -
-                            (
-                                speed *
-                                0.055
-                            )
+                            speed * 0.055
                         );
 
 
                     /*
-                     * Finish travel.
+                     * Move to settle phase.
                      */
                     if (
                         particle.phaseTime >=
@@ -454,7 +484,8 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Continue moving.
+                     * Keep moving while
+                     * becoming round.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -464,8 +495,7 @@ if (!loader) {
 
 
                     /*
-                     * Kill remaining momentum
-                     * gradually.
+                     * Gradually remove momentum.
                      */
                     particle.velocityX *=
                         0.88;
@@ -517,6 +547,9 @@ if (!loader) {
                         );
 
 
+                    /*
+                     * Finished settling.
+                     */
                     if (
                         particle.phaseTime >=
                         particle.settleTime
@@ -530,7 +563,7 @@ if (!loader) {
 
 
                         /*
-                         * Freeze.
+                         * Completely stop.
                          */
                         particle.velocityX =
                             0;
@@ -557,7 +590,7 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Completely suspended.
+                     * Stay perfectly round.
                      */
                     particle.scaleX =
                         1;
@@ -566,6 +599,10 @@ if (!loader) {
                         1;
 
 
+                    /*
+                     * After lingering,
+                     * begin popping.
+                     */
                     if (
                         particle.phaseTime >=
                         particle.lingerTime
@@ -614,7 +651,7 @@ if (!loader) {
 
 
                     /*
-                     * Fade toward the end.
+                     * Fade only near the end.
                      */
                     if (
                         progress > 0.55
@@ -632,6 +669,9 @@ if (!loader) {
                     }
 
 
+                    /*
+                     * Remove particle.
+                     */
                     if (
                         particle.phaseTime >=
                         particle.popTime
@@ -643,7 +683,7 @@ if (!loader) {
 
 
                 /* =================================================
-                   DRAW CLEAN CIRCLE
+                   DRAW
                    ================================================= */
 
                 ctx.save();
@@ -666,8 +706,10 @@ if (!loader) {
                 );
 
 
+                /*
+                 * CLEAN CIRCLE.
+                 */
                 ctx.beginPath();
-
 
                 ctx.arc(
                     0,
@@ -678,6 +720,9 @@ if (!loader) {
                 );
 
 
+                /*
+                 * Red particle.
+                 */
                 ctx.fillStyle =
                     `rgba(
                         255,
@@ -699,11 +744,14 @@ if (!loader) {
 
 
     /* =====================================================
-       ANIMATION
+       MAIN ANIMATION LOOP
        ===================================================== */
 
     function animate(timestamp) {
 
+        /*
+         * Establish start time.
+         */
         if (startTime === null) {
 
             startTime =
@@ -716,9 +764,9 @@ if (!loader) {
             startTime;
 
 
-        /* ---------------------------------------------
-           CLEAR
-           --------------------------------------------- */
+        /* =================================================
+           CLEAR CANVAS
+           ================================================= */
 
         ctx.clearRect(
             0,
@@ -728,9 +776,9 @@ if (!loader) {
         );
 
 
-        /* ---------------------------------------------
-           EMIT
-           --------------------------------------------- */
+        /* =================================================
+           CREATE NEW PARTICLES
+           ================================================= */
 
         if (
             elapsed >= TRAIL_START &&
@@ -741,28 +789,38 @@ if (!loader) {
                 getLoaderEdge();
 
 
-            if (
-                particles.length <
-                MAX_PARTICLES
+            /*
+             * Create particles.
+             */
+            for (
+                let i = 0;
+                i < PARTICLES_PER_FRAME;
+                i++
             ) {
 
-                createParticle(
-                    edgeY
-                );
+                if (
+                    particles.length <
+                    MAX_PARTICLES
+                ) {
+
+                    createParticle(
+                        edgeY
+                    );
+                }
             }
         }
 
 
-        /* ---------------------------------------------
+        /* =================================================
            UPDATE
-           --------------------------------------------- */
+           ================================================= */
 
         updateParticles();
 
 
-        /* ---------------------------------------------
-           CONTINUE
-           --------------------------------------------- */
+        /* =================================================
+           NEXT FRAME
+           ================================================= */
 
         requestAnimationFrame(
             animate
@@ -786,5 +844,4 @@ if (!loader) {
     requestAnimationFrame(
         animate
     );
-}
 }
