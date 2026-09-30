@@ -366,46 +366,30 @@ main {
     animation: pageAppear 1.8s forwards;
 }
 
-/* Red loading screen */
 .page-loader {
     position: fixed;
     inset: 0;
     background: #FF1609;
     z-index: 9999;
+    overflow: visible;
 
     transform-origin: top;
-    animation: redReveal 1.8s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    animation: redReveal 2s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
-/* Page appears underneath the red */
-@keyframes pageAppear {
-    0%, 40% {
-        opacity: 0;
-    }
-
-    41%, 100% {
-        opacity: 1;
-    }
-}
-
-/* Red animation */
 @keyframes redReveal {
-    /* Start as a thin line */
     0% {
         transform: scaleY(0.01);
     }
 
-    /* Grow downward until entire screen is covered */
     40% {
         transform: scaleY(1);
     }
 
-    /* Hold while page finishes appearing underneath */
     65% {
         transform: scaleY(1);
     }
 
-    /* Slide completely off the bottom */
     100% {
         transform: translateY(100%);
     }
