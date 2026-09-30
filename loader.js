@@ -1,5 +1,5 @@
 /* =========================================================
-   PAGE LOADER + PARTICLE TRAIL
+   PAGE LOADER + DRIPPING PARTICLE TRAIL
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
@@ -35,14 +35,11 @@ if (!loader) {
     const TRAIL_START = 1300;
 
     /*
-     * Fewer particles.
+     * Fewer, more substantial particles.
      */
-    const PARTICLES_PER_FRAME = 4;
+    const PARTICLES_PER_FRAME = 3;
 
-    /*
-     * Maximum particles alive.
-     */
-    const MAX_PARTICLES = 250;
+    const MAX_PARTICLES = 180;
 
 
     let particles = [];
@@ -55,7 +52,8 @@ if (!loader) {
 
     function resizeCanvas() {
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr =
+            window.devicePixelRatio || 1;
 
         canvas.width =
             window.innerWidth * dpr;
@@ -87,45 +85,52 @@ if (!loader) {
     function createParticle(edgeY) {
 
         if (
-            edgeY < -20 ||
-            edgeY > window.innerHeight + 20
+            edgeY < -30 ||
+            edgeY > window.innerHeight + 30
         ) {
             return;
         }
 
 
         /* ---------------------------------------------
-           RANDOM SIZE
+           SIZE
            --------------------------------------------- */
 
         /*
-         * Much wider size variation.
-         *
-         * Most particles will still be small,
-         * but occasionally a larger piece appears.
+         * Mostly medium/large particles,
+         * with occasional large chunks.
          */
-        const size =
-            Math.random() < 0.75
-                ? Math.random() * 2.5 + 1
-                : Math.random() * 6 + 3;
+        let size;
+
+        const randomSize =
+            Math.random();
+
+        if (randomSize < 0.65) {
+
+            size =
+                Math.random() * 4 + 3;
+
+        } else if (randomSize < 0.9) {
+
+            size =
+                Math.random() * 6 + 5;
+
+        } else {
+
+            size =
+                Math.random() * 9 + 8;
+        }
 
 
         /* ---------------------------------------------
-           RANDOM MOVEMENT
+           PARTICLE
            --------------------------------------------- */
-
-        /*
-         * Strong downward inertia.
-         *
-         * This represents the momentum inherited
-         * from the red loader moving downward.
-         */
-        const velocityY =
-            Math.random() * 4 + 3;
-
 
         particles.push({
 
+            /*
+             * Start directly on the red edge.
+             */
             x:
                 Math.random() *
                 window.innerWidth,
@@ -133,37 +138,48 @@ if (!loader) {
             y:
                 edgeY,
 
+            /*
+             * Base size.
+             */
             size:
                 size,
 
             originalSize:
                 size,
 
+            /*
+             * Small sideways movement.
+             */
             velocityX:
-                (Math.random() - 0.5) * 2.5,
-
-            velocityY:
-                velocityY,
+                (Math.random() - 0.5) * 2,
 
             /*
-             * How quickly the particle shrinks.
+             * Strong downward impulse.
+             */
+            velocityY:
+                Math.random() * 3.5 + 4,
+
+            /*
+             * Gradual loss of momentum.
+             */
+            gravity:
+                Math.random() * 0.04 + 0.015,
+
+            /*
+             * How quickly the particle
+             * contracts.
              */
             shrink:
-                Math.random() * 0.12 + 0.08,
+                Math.random() * 0.16 + 0.10,
 
             /*
-             * Lifetime.
-             *
-             * Smaller number = faster disappearance.
+             * Short lifetime.
              */
             life:
-                Math.random() * 12 + 10,
-
-            maxLife:
-                1,
+                Math.random() * 12 + 12,
 
             /*
-             * Fully solid when created.
+             * Start completely solid.
              */
             opacity: 1
         });
@@ -171,7 +187,7 @@ if (!loader) {
 
 
     /* =====================================================
-       GET MOVING RED EDGE
+       GET MOVING EDGE
        ===================================================== */
 
     function getLoaderEdge() {
@@ -179,12 +195,16 @@ if (!loader) {
         const rect =
             loader.getBoundingClientRect();
 
+        /*
+         * TOP edge is the edge moving
+         * downward across the page.
+         */
         return rect.top;
     }
 
 
     /* =====================================================
-       UPDATE + DRAW PARTICLES
+       UPDATE + DRAW
        ===================================================== */
 
     function updateParticles() {
@@ -204,13 +224,17 @@ if (!loader) {
 
 
                 /*
-                 * Slightly reduce downward velocity
-                 * over time.
-                 *
-                 * This creates a subtle sense of
-                 * momentum rather than constant speed.
+                 * Gravity / momentum.
                  */
-                particle.velocityY *= 0.97;
+                particle.velocityY +=
+                    particle.gravity;
+
+
+                /*
+                 * Slight horizontal drag.
+                 */
+                particle.velocityX *=
+                    0.99;
 
 
                 /* -----------------------------------------
@@ -222,18 +246,11 @@ if (!loader) {
 
 
                 /* -----------------------------------------
-                   LIFE
+                   FINAL FADE
                    ----------------------------------------- */
 
                 particle.life -= 1;
 
-
-                /*
-                 * Keep particles completely solid
-                 * for most of their life.
-                 *
-                 * Only fade during the final moments.
-                 */
                 if (
                     particle.life < 3
                 ) {
@@ -249,8 +266,7 @@ if (!loader) {
 
                 if (
                     particle.size <= 0 ||
-                    particle.life <= 0 ||
-                    particle.opacity <= 0
+                    particle.life <= 0
                 ) {
                     return false;
                 }
@@ -262,10 +278,23 @@ if (!loader) {
 
                 ctx.beginPath();
 
-                ctx.arc(
+                /*
+                 * Slight vertical stretching while
+                 * the particle is moving quickly.
+                 */
+                const stretch =
+                    Math.min(
+                        1.8,
+                        1 +
+                        particle.velocityY * 0.08
+                    );
+
+                ctx.ellipse(
                     particle.x,
                     particle.y,
                     particle.size,
+                    particle.size * stretch,
+                    0,
                     0,
                     Math.PI * 2
                 );
@@ -313,7 +342,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           PARTICLE EMISSION
+           EMIT
            --------------------------------------------- */
 
         if (
@@ -343,7 +372,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           UPDATE + DRAW
+           UPDATE
            --------------------------------------------- */
 
         updateParticles();
