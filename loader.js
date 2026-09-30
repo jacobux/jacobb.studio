@@ -21,6 +21,10 @@ if (!loader) {
     canvas.style.width = "100vw";
     canvas.style.height = "100vh";
     canvas.style.pointerEvents = "none";
+
+    /*
+     * Above the red loader AND page content.
+     */
     canvas.style.zIndex = "10000";
 
     document.body.appendChild(canvas);
@@ -33,22 +37,21 @@ if (!loader) {
     const DURATION = 2000;
 
     /*
-     * The red loader begins moving downward at 65%.
+     * Red loader begins moving down at 65%.
      *
-     * 2000ms × 0.65 = 1300ms
+     * 2000 × 0.65 = 1300ms
      */
     const TRAIL_START = 1300;
 
     /*
      * Number of particles generated per frame.
      */
-    const PARTICLES_PER_FRAME = 8;
+    const PARTICLES_PER_FRAME = 10;
 
     /*
-     * Maximum number of particles
-     * allowed to exist at once.
+     * Maximum number of particles alive.
      */
-    const MAX_PARTICLES = 500;
+    const MAX_PARTICLES = 700;
 
 
     let particles = [];
@@ -63,11 +66,17 @@ if (!loader) {
 
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
+        canvas.width =
+            window.innerWidth * dpr;
 
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
+        canvas.height =
+            window.innerHeight * dpr;
+
+        canvas.style.width =
+            window.innerWidth + "px";
+
+        canvas.style.height =
+            window.innerHeight + "px";
 
         ctx.setTransform(
             dpr,
@@ -87,12 +96,16 @@ if (!loader) {
     function createParticle(edgeY) {
 
         /*
-         * Only create particles while the red edge
-         * is actually inside the viewport.
+         * Don't create particles outside
+         * the visible viewport.
          */
-        if (edgeY < 0 || edgeY > window.innerHeight) {
+        if (
+            edgeY < -20 ||
+            edgeY > window.innerHeight + 20
+        ) {
             return;
         }
+
 
         particles.push({
 
@@ -104,37 +117,39 @@ if (!loader) {
                 window.innerWidth,
 
             /*
-             * Start directly on the red edge.
+             * Start at the moving TOP edge
+             * of the red loader.
              */
             y:
                 edgeY,
 
             /*
-             * Small random particle size.
+             * Slightly larger particles
+             * so the effect is easy to see.
              */
             size:
-                Math.random() * 2.5 + 1,
+                Math.random() * 2.5 + 1.5,
 
             /*
-             * Slight horizontal movement.
+             * Slight horizontal drift.
              */
             velocityX:
-                (Math.random() - 0.5) * 1.5,
+                (Math.random() - 0.5) * 1.8,
 
             /*
-             * Particles drift downward
-             * after being released.
+             * Drift DOWNWARD after being
+             * left behind by the red panel.
              */
             velocityY:
                 Math.random() * 1.5 + 0.5,
 
             /*
-             * Initial opacity.
+             * Fully visible initially.
              */
             opacity: 1,
 
             /*
-             * Random fade speed.
+             * Fade speed.
              */
             fade:
                 Math.random() * 0.018 + 0.012
@@ -143,53 +158,59 @@ if (!loader) {
 
 
     /* =====================================================
-       GET LOADER EDGE
+       GET MOVING RED EDGE
        ===================================================== */
 
     function getLoaderEdge() {
 
-        /*
-         * Get the loader's actual position
-         * on screen.
-         */
-        const rect = loader.getBoundingClientRect();
+        const rect =
+            loader.getBoundingClientRect();
 
         /*
-         * rect.bottom is the actual bottom edge
-         * of the red loader.
+         * IMPORTANT:
+         *
+         * The red loader moves DOWNWARD.
+         *
+         * Therefore its TOP edge is the
+         * visible moving boundary.
          */
-        return rect.bottom;
+        return rect.top;
     }
 
 
     /* =====================================================
-       DRAW PARTICLES
+       UPDATE + DRAW PARTICLES
        ===================================================== */
 
-    function drawParticles() {
+    function updateParticles() {
 
         particles = particles.filter(
             particle => {
 
                 /*
-                 * Move particle.
+                 * Move.
                  */
-                particle.x += particle.velocityX;
-                particle.y += particle.velocityY;
+                particle.x +=
+                    particle.velocityX;
 
-                /*
-                 * Fade particle.
-                 */
-                particle.opacity -= particle.fade;
+                particle.y +=
+                    particle.velocityY;
 
 
                 /*
-                 * Remove particles that
-                 * have completely faded.
+                 * Fade.
+                 */
+                particle.opacity -=
+                    particle.fade;
+
+
+                /*
+                 * Remove dead particles.
                  */
                 if (
                     particle.opacity <= 0 ||
-                    particle.y > window.innerHeight + 20
+                    particle.y >
+                        window.innerHeight + 20
                 ) {
                     return false;
                 }
@@ -210,7 +231,12 @@ if (!loader) {
                 );
 
                 ctx.fillStyle =
-                    `rgba(255, 255, 255, ${particle.opacity})`;
+                    `rgba(
+                        255,
+                        255,
+                        255,
+                        ${particle.opacity}
+                    )`;
 
                 ctx.fill();
 
@@ -235,7 +261,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           CLEAR CANVAS
+           CLEAR
            --------------------------------------------- */
 
         ctx.clearRect(
@@ -247,7 +273,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           PARTICLE EMISSION
+           CREATE PARTICLE TRAIL
            --------------------------------------------- */
 
         if (
@@ -255,16 +281,13 @@ if (!loader) {
             elapsed <= DURATION
         ) {
 
-            /*
-             * Get the ACTUAL current bottom edge
-             * of the red loader.
-             */
             const edgeY =
                 getLoaderEdge();
 
 
             /*
-             * Create particles at the edge.
+             * Emit particles directly from
+             * the moving red edge.
              */
             for (
                 let i = 0;
@@ -287,7 +310,7 @@ if (!loader) {
            UPDATE + DRAW
            --------------------------------------------- */
 
-        drawParticles();
+        updateParticles();
 
 
         /* ---------------------------------------------
