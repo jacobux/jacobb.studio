@@ -3,6 +3,7 @@ const loader = document.querySelector(".page-loader");
 if (!loader) {
     console.warn("Page loader not found.");
 } else {
+
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -17,50 +18,77 @@ if (!loader) {
 
     let particles = [];
 
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function createParticle() {
-        const rect = loader.getBoundingClientRect();
-
+    function addParticle(x, y) {
         particles.push({
-            x: Math.random() * window.innerWidth,
-            y: rect.bottom,
-            size: Math.random() * 2.5 + 1,
-            speedX: (Math.random() - 0.5) * 1.2,
-            speedY: Math.random() * 1.5 + 0.5,
+            x: x,
+            y: y,
+
+            size: Math.random() * 3 + 1,
+
+            velocityX: (Math.random() - 0.5) * 2,
+            velocityY: Math.random() * 2 + 0.5,
+
             life: 1,
-            decay: Math.random() * 0.025 + 0.02
+
+            fade: Math.random() * 0.025 + 0.02
         });
     }
 
     function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.clearRect(
+            0,
+            0,
+            window.innerWidth,
+            window.innerHeight
+        );
 
         const rect = loader.getBoundingClientRect();
 
-        // Create particles only while the red panel is sliding away
+        /*
+         * The particles are created along the
+         * bottom edge of the red panel.
+         */
         if (
             rect.bottom > 0 &&
-            rect.bottom < window.innerHeight
+            rect.bottom < window.innerHeight + 50
         ) {
-            for (let i = 0; i < 2; i++) {
-                createParticle();
+
+            for (let i = 0; i < 5; i++) {
+
+                addParticle(
+                    Math.random() * window.innerWidth,
+                    rect.bottom
+                );
+
             }
         }
 
         particles = particles.filter(particle => {
-            particle.x += particle.speedX;
-            particle.y += particle.speedY;
-            particle.life -= particle.decay;
+
+            particle.x += particle.velocityX;
+            particle.y += particle.velocityY;
+
+            particle.life -= particle.fade;
 
             if (particle.life <= 0) {
                 return false;
             }
 
             ctx.beginPath();
+
             ctx.arc(
                 particle.x,
                 particle.y,
@@ -69,7 +97,9 @@ if (!loader) {
                 Math.PI * 2
             );
 
-            ctx.fillStyle = `rgba(255, 255, 255, ${particle.life})`;
+            ctx.fillStyle =
+                `rgba(255,255,255,${particle.life})`;
+
             ctx.fill();
 
             return true;
@@ -78,8 +108,12 @@ if (!loader) {
         requestAnimationFrame(animate);
     }
 
-    resize();
-    window.addEventListener("resize", resize);
+    resizeCanvas();
+
+    window.addEventListener(
+        "resize",
+        resizeCanvas
+    );
 
     animate();
 }
