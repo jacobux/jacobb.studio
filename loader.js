@@ -1,11 +1,14 @@
 /* =========================================================
-   PAGE LOADER + SUBTLE PARTICLE TRAIL
+   PAGE LOADER + PARTICLE TRAIL
+   Based on the working loader-edge version
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
 
 if (!loader) {
+
     console.warn("No .page-loader found.");
+
 } else {
 
     const canvas = document.createElement("canvas");
@@ -27,8 +30,9 @@ if (!loader) {
        ===================================================== */
 
     const DURATION = 2000;
-    const TRAIL_START = 1250;
-    const MAX_PARTICLES = 24;
+    const TRAIL_START = 1300;
+
+    const MAX_PARTICLES = 26;
 
 
     let particles = [];
@@ -41,13 +45,20 @@ if (!loader) {
 
     function resizeCanvas() {
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr =
+            window.devicePixelRatio || 1;
 
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
+        canvas.width =
+            window.innerWidth * dpr;
 
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
+        canvas.height =
+            window.innerHeight * dpr;
+
+        canvas.style.width =
+            window.innerWidth + "px";
+
+        canvas.style.height =
+            window.innerHeight + "px";
 
         ctx.setTransform(
             dpr,
@@ -66,15 +77,25 @@ if (!loader) {
 
     function easeOut(t) {
 
-        return 1 - Math.pow(1 - t, 3);
+        return 1 -
+            Math.pow(
+                1 - t,
+                3
+            );
     }
 
 
     function easeInOut(t) {
 
         return t < 0.5
+
             ? 4 * t * t * t
-            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+            : 1 -
+              Math.pow(
+                  -2 * t + 2,
+                  3
+              ) / 2;
     }
 
 
@@ -84,29 +105,35 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
-        const random = Math.random();
+        const random =
+            Math.random();
 
         let size;
 
+
         /*
-           Smaller overall particle sizes.
+           Smaller particles overall.
         */
 
         if (random < 0.50) {
 
-            size = Math.random() * 2.5 + 2.5;
+            size =
+                Math.random() * 2.5 + 2.5;
 
         } else if (random < 0.82) {
 
-            size = Math.random() * 3.5 + 4;
+            size =
+                Math.random() * 3 + 4;
 
         } else if (random < 0.96) {
 
-            size = Math.random() * 5 + 7;
+            size =
+                Math.random() * 4 + 7;
 
         } else {
 
-            size = Math.random() * 7 + 11;
+            size =
+                Math.random() * 5 + 10;
         }
 
 
@@ -123,10 +150,7 @@ if (!loader) {
 
 
             /* =================================================
-               MOTION
-
-               One continuous velocity is used for the entire
-               lifetime of the particle.
+               MOVEMENT
                ================================================= */
 
             velocityX: 0,
@@ -137,64 +161,66 @@ if (!loader) {
 
 
             /*
-               Very subtle sideways destination.
+               Very small sideways movement.
+
+               This is intentionally much lower than before.
             */
 
             targetX:
-                (Math.random() - 0.5) * 0.65,
+                (Math.random() - 0.5) * 0.45,
 
-
-            /*
-               Extremely subtle curve.
-            */
 
             curve:
-                (Math.random() - 0.5) * 0.012,
-
-
-            gravity:
-                0.018 +
-                Math.random() * 0.012,
+                (Math.random() - 0.5) * 0.008,
 
 
             friction:
-                0.985,
+                0.975,
+
+
+            gravity:
+                0.012 +
+                Math.random() * 0.01,
 
 
             /* =================================================
                TIMING
                ================================================= */
 
-            age: 0,
+            phase:
+                "stretch",
+
+            phaseTime:
+                0,
+
 
             stretchTime:
-                7 +
+                6 +
                 Math.random() * 4,
 
-            releaseTime:
-                10 +
-                Math.random() * 6,
 
-            lifeTime:
-                65 +
-                Math.random() * 25,
+            trailTime:
+                45 +
+                Math.random() * 20,
+
 
             popTime:
                 9,
-
-
-            released: false,
-
-            opacity: 1,
 
 
             /* =================================================
                SHAPE
                ================================================= */
 
-            scaleX: 0.65,
+            scaleX:
+                0.55,
 
-            scaleY: 1
+            scaleY:
+                1,
+
+
+            opacity:
+                1
         });
     }
 
@@ -205,7 +231,9 @@ if (!loader) {
 
     function getLoaderEdge() {
 
-        return loader.getBoundingClientRect().top;
+        return loader
+            .getBoundingClientRect()
+            .top;
     }
 
 
@@ -218,42 +246,46 @@ if (!loader) {
         particles =
             particles.filter(function (particle) {
 
-            particle.age++;
+            particle.phaseTime++;
 
 
             /* =================================================
-               ATTACHED / STRETCHING
+               STRETCH
 
-               Particle remains directly beneath the line.
+               Particle is still attached to the red edge.
 
-               No X movement yet.
+               It moves ONLY vertically here.
                ================================================= */
 
-            if (!particle.released) {
+            if (
+                particle.phase ===
+                "stretch"
+            ) {
 
-                const stretchProgress =
+                const progress =
                     Math.min(
                         1,
-                        particle.age /
+                        particle.phaseTime /
                         particle.stretchTime
                     );
 
-                const stretch =
-                    easeOut(stretchProgress);
+
+                const eased =
+                    easeOut(progress);
 
 
                 /*
-                   Keep horizontal position completely locked
-                   while the particle is attached.
+                   Keep X completely locked.
                 */
 
-                particle.velocityX = 0;
+                particle.velocityX =
+                    0;
 
 
                 /*
                    Continuous vertical movement.
 
-                   No artificial velocity reset.
+                   No velocity reset.
                 */
 
                 particle.y +=
@@ -261,9 +293,7 @@ if (!loader) {
 
 
                 /*
-                   Slight natural slowing as it stretches,
-                   but without repeatedly multiplying the
-                   velocity into oblivion.
+                   Gravity continues naturally.
                 */
 
                 particle.velocityY +=
@@ -271,75 +301,76 @@ if (!loader) {
 
 
                 /*
-                   Stretch only along Y.
+                   SUBTLE vertical stretch.
 
-                   Subtle rather than exaggerated.
+                   Much less exaggerated than before.
                 */
 
                 particle.scaleX =
-                    0.65 +
-                    (0.35 * stretch);
+                    0.55 +
+                    (
+                        0.45 *
+                        eased
+                    );
 
                 particle.scaleY =
                     1 +
-                    (1.8 * stretch);
+                    (
+                        1.7 *
+                        eased
+                    );
 
 
                 /*
-                   Once stretched, release it.
+                   Break away.
                 */
 
                 if (
-                    particle.age >=
+                    particle.phaseTime >=
                     particle.stretchTime
                 ) {
 
-                    particle.released = true;
+                    particle.phase =
+                        "trail";
+
+                    particle.phaseTime =
+                        0;
                 }
             }
 
 
             /* =================================================
-               RELEASED / FREE MOTION
+               TRAIL
 
-               Same velocity continues from the stretch.
+               This is the important part:
 
-               X movement slowly emerges rather than suddenly
-               jumping sideways.
+               The particle NEVER stops.
+
+               It gradually loses momentum while continuing
+               to drift until it reaches the pop.
                ================================================= */
 
-            else {
-
-                const releaseAge =
-                    particle.age -
-                    particle.stretchTime;
-
-
-                const releaseProgress =
-                    Math.min(
-                        1,
-                        releaseAge /
-                        particle.releaseTime
-                    );
-
-
-                const release =
-                    easeOut(releaseProgress);
-
+            else if (
+                particle.phase ===
+                "trail"
+            ) {
 
                 /*
-                   Gradually introduce the very small X velocity.
+                   Slowly introduce sideways movement.
+
+                   This prevents the sudden horizontal jump
+                   that caused the previous mechanical motion.
                 */
 
                 particle.velocityX +=
                     (
                         particle.targetX -
                         particle.velocityX
-                    ) * 0.055;
+                    ) * 0.035;
 
 
                 /*
-                   Tiny curvature.
+                   Very subtle curve.
                 */
 
                 particle.velocityX +=
@@ -347,7 +378,7 @@ if (!loader) {
 
 
                 /*
-                   Continuous movement.
+                   CONTINUOUS movement.
                 */
 
                 particle.x +=
@@ -358,9 +389,10 @@ if (!loader) {
 
 
                 /*
-                   Natural deceleration.
+                   Gradually slow the particle.
 
-                   The particle slows down but NEVER stops.
+                   It keeps moving because gravity continues
+                   acting on the Y velocity.
                 */
 
                 particle.velocityX *=
@@ -370,54 +402,61 @@ if (!loader) {
                     particle.friction;
 
 
-                /*
-                   Gravity keeps the particle drifting
-                   vertically even as momentum fades.
-                */
-
                 particle.velocityY +=
                     particle.gravity;
 
 
                 /*
-                   Return from stretched shape to a normal
-                   round particle.
+                   Return smoothly from stretched shape.
                 */
+
+                const roundProgress =
+                    Math.min(
+                        1,
+                        particle.phaseTime / 12
+                    );
+
+
+                const round =
+                    easeOut(roundProgress);
+
 
                 particle.scaleX =
                     1;
 
                 particle.scaleY =
-                    2.8 -
+                    2.7 -
                     (
-                        1.8 *
-                        release
+                        1.7 *
+                        round
                     );
 
 
                 /*
-                   Keep a tiny amount of motion alive.
+                   IMPORTANT:
 
-                   This prevents the particle from ever
-                   looking frozen before the pop.
+                   No velocity is ever set to zero.
+
+                   Even if momentum gets very small,
+                   gravity keeps the particle drifting.
+                */
+
+
+                /*
+                   Move to pop once its trail has naturally
+                   run long enough.
                 */
 
                 if (
-                    Math.abs(particle.velocityX) <
-                    0.015
+                    particle.phaseTime >=
+                    particle.trailTime
                 ) {
 
-                    particle.velocityX +=
-                        particle.curve;
-                }
+                    particle.phase =
+                        "pop";
 
-                if (
-                    Math.abs(particle.velocityY) <
-                    0.08
-                ) {
-
-                    particle.velocityY +=
-                        0.08;
+                    particle.phaseTime =
+                        0;
                 }
             }
 
@@ -425,22 +464,43 @@ if (!loader) {
             /* =================================================
                POP
 
-               Particle continues its motion while shrinking.
+               Particle keeps moving while disappearing.
                ================================================= */
 
-            if (
-                particle.age >=
-                particle.lifeTime
+            else if (
+                particle.phase ===
+                "pop"
             ) {
 
-                const popAge =
-                    particle.age -
-                    particle.lifeTime;
+                /*
+                   Continue the exact same motion.
+                */
+
+                particle.x +=
+                    particle.velocityX;
+
+                particle.y +=
+                    particle.velocityY;
+
+
+                /*
+                   Continue slowing while it pops.
+                */
+
+                particle.velocityX *=
+                    0.97;
+
+                particle.velocityY *=
+                    0.97;
+
+                particle.velocityY +=
+                    particle.gravity;
+
 
                 const progress =
                     Math.min(
                         1,
-                        popAge /
+                        particle.phaseTime /
                         particle.popTime
                     );
 
@@ -449,10 +509,6 @@ if (!loader) {
                     1 -
                     easeInOut(progress);
 
-
-                /*
-                   Shrink instead of abruptly disappearing.
-                */
 
                 particle.scaleX =
                     pop;
@@ -482,17 +538,12 @@ if (!loader) {
 
             ctx.save();
 
+
             ctx.translate(
                 particle.x,
                 particle.y
             );
 
-
-            /*
-               No rotation.
-
-               Stretch remains vertically aligned.
-            */
 
             ctx.scale(
                 particle.scaleX,
@@ -501,6 +552,7 @@ if (!loader) {
 
 
             ctx.beginPath();
+
 
             ctx.arc(
                 0,
@@ -521,6 +573,7 @@ if (!loader) {
 
 
             ctx.fill();
+
 
             ctx.restore();
 
@@ -557,8 +610,8 @@ if (!loader) {
 
 
         /*
-           Start creating particles while the red loader
-           is sliding away.
+           Create particles from the ACTUAL moving edge
+           of the red loader.
         */
 
         if (
@@ -588,10 +641,12 @@ if (!loader) {
 
     resizeCanvas();
 
+
     window.addEventListener(
         "resize",
         resizeCanvas
     );
+
 
     requestAnimationFrame(
         animate
