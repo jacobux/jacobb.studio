@@ -452,3 +452,11 @@ main,
         transform: translateY(100%);
     }
 }
+
+body {
+    cursor: none;
+}
+
+a {
+    cursor: none;
+}
