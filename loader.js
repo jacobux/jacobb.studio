@@ -661,4 +661,19 @@ if (!loader) {
     requestAnimationFrame(
         animate
     );
+
+
+    /* =====================================================
+       IOS SAFARI CLEANUP
+       ===================================================== */
+
+    loader.addEventListener(
+        "animationend",
+        function () {
+
+            loader.style.display =
+                "none";
+
+        }
+    );
 }
