@@ -1,6 +1,6 @@
 /* =========================================================
    PAGE LOADER
-   SPIRALLING / GRAINY PAINT PARTICLES
+   SPIRALLING / SUBTLY GRAINY PARTICLES
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
@@ -34,6 +34,7 @@ if (!loader) {
     const DURATION = 2000;
 
     const TRAIL_START = 1250;
+
 
     /*
      * VERY FEW PARTICLES
@@ -106,7 +107,7 @@ if (!loader) {
 
 
     /* =====================================================
-       CREATE GRAINY PARTICLE SHAPE
+       CREATE SUBTLY GRAINY PARTICLE SHAPE
        ===================================================== */
 
     function createParticleShape(points) {
@@ -129,12 +130,15 @@ if (!loader) {
 
 
             /*
-             * Random radius creates the
-             * rough / grainy perimeter.
+             * VERY subtle edge variation.
+             *
+             * Keeps the particle almost perfectly
+             * round while adding a tiny organic
+             * amount of graininess.
              */
             const variation =
-                0.72 +
-                Math.random() * 0.45;
+                0.94 +
+                Math.random() * 0.12;
 
 
             shape.push({
@@ -203,6 +207,9 @@ if (!loader) {
 
             /*
              * VERY LARGE
+             *
+             * Rare enough that these feel like
+             * larger chunks breaking off.
              */
             size =
                 Math.random() * 15 + 24;
@@ -228,14 +235,14 @@ if (!loader) {
 
 
             /* ---------------------------------------------
-               GRAIN
+               SUBTLE GRAIN
                --------------------------------------------- */
 
             shape:
                 createParticleShape(
                     Math.floor(
                         Math.random() * 4
-                    ) + 9
+                    ) + 16
                 ),
 
 
@@ -264,7 +271,8 @@ if (!loader) {
 
 
             /*
-             * Direction changes over time.
+             * Slowly changes the curve over
+             * the particle's travel.
              */
             curveVelocity:
                 (Math.random() - 0.5) *
@@ -274,7 +282,8 @@ if (!loader) {
             /*
              * Momentum retention.
              *
-             * Higher = travels farther.
+             * High value = particles travel
+             * farther before slowing.
              */
             friction:
                 0.965,
@@ -307,6 +316,9 @@ if (!loader) {
                PHASES
                --------------------------------------------- */
 
+            /*
+             * Travel / spiral phase.
+             */
             phase:
                 "travel",
 
@@ -315,7 +327,8 @@ if (!loader) {
 
 
             /*
-             * Long travel.
+             * Long enough for the particle to
+             * visibly travel away from the line.
              */
             travelTime:
                 Math.random() * 12 +
@@ -323,7 +336,7 @@ if (!loader) {
 
 
             /*
-             * Become round.
+             * Transition from stretched to round.
              */
             settleTime:
                 Math.random() * 7 +
@@ -331,15 +344,15 @@ if (!loader) {
 
 
             /*
-             * Stay suspended.
+             * Slightly shorter stationary period.
              */
             lingerTime:
-                Math.random() * 25 +
-                35,
+                Math.random() * 18 +
+                28,
 
 
             /*
-             * Pop.
+             * Very quick pop.
              */
             popTime:
                 7,
@@ -404,8 +417,9 @@ if (!loader) {
                      */
 
                     /*
-                     * Change horizontal velocity
-                     * based on the particle's curve.
+                     * Horizontal velocity changes
+                     * continuously, producing the curved
+                     * / spiralling trajectory.
                      */
                     particle.velocityX +=
                         particle.curve;
@@ -413,9 +427,6 @@ if (!loader) {
 
                     /*
                      * Slowly change the curve itself.
-                     *
-                     * This creates a subtle
-                     * spiralling / wandering path.
                      */
                     particle.curve +=
                         particle.curveVelocity;
@@ -432,10 +443,7 @@ if (!loader) {
 
 
                     /*
-                     * Momentum decay.
-                     *
-                     * MUCH slower than the previous
-                     * version.
+                     * Gradually lose momentum.
                      */
                     particle.velocityX *=
                         particle.friction;
@@ -445,7 +453,7 @@ if (!loader) {
 
 
                     /*
-                     * Small gravitational influence.
+                     * Tiny gravitational influence.
                      */
                     particle.velocityY +=
                         particle.gravity;
@@ -473,6 +481,7 @@ if (!loader) {
 
                     /*
                      * Fast = stretched.
+                     *
                      * Slow = round.
                      */
                     const stretch =
@@ -498,7 +507,7 @@ if (!loader) {
 
 
                     /*
-                     * End travel.
+                     * End travel phase.
                      */
                     if (
                         particle.phaseTime >=
@@ -523,7 +532,8 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Continue moving.
+                     * Continue moving while
+                     * becoming round.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -533,7 +543,8 @@ if (!loader) {
 
 
                     /*
-                     * Continue losing momentum.
+                     * Gradually lose the remaining
+                     * momentum.
                      */
                     particle.velocityX *=
                         0.88;
@@ -598,7 +609,7 @@ if (!loader) {
 
 
                         /*
-                         * Stop it completely.
+                         * Freeze at the final position.
                          */
                         particle.velocityX =
                             0;
@@ -664,6 +675,9 @@ if (!loader) {
                         );
 
 
+                    /*
+                     * Very fast collapse.
+                     */
                     const pop =
                         1 -
                         easeInOut(
@@ -679,7 +693,7 @@ if (!loader) {
 
 
                     /*
-                     * Slightly irregular fade.
+                     * Fade only toward the end.
                      */
                     if (
                         progress > 0.55
@@ -732,7 +746,7 @@ if (!loader) {
 
 
                 /*
-                 * DRAW IRREGULAR / GRAINY EDGE
+                 * DRAW SUBTLY IRREGULAR PARTICLE
                  */
                 ctx.beginPath();
 
@@ -827,7 +841,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           EMIT
+           EMIT PARTICLES
            --------------------------------------------- */
 
         if (
