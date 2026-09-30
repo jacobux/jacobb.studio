@@ -172,14 +172,15 @@ main {
 
     .vacancy {
         margin-top: 65px;
-          padding: 6px 12px;
-         background-color: #FF1609;
-          border-radius: 10px
           
     }
 
     .vacancy p {
         font-size: 48px;
+         padding: 6px 12px;
+         colour: #000000;
+         background-color: #FF1609;
+         border-radius: 3px
         line-height: 0.95;
     }
 }
@@ -190,7 +191,7 @@ main {
 
     .vacancymessage p {
         font-size: 24px;
-        font-weight: 300px;
+        font-weight: 200px;
         line-height: 0.95;
     }
 }
