@@ -376,6 +376,14 @@ main {
     transform-origin: top;
     animation: redReveal 2s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
+ 
+   .loader-particle {
+    position: fixed;
+    background: #FF1609;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+   }
 
 @keyframes redReveal {
     0% {
