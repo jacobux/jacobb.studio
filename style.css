@@ -140,6 +140,23 @@ main {
     letter-spacing: -0.05em;
 }
 
+.back_nav {
+    width: 100%;
+    max-width: 900px;
+
+    margin: 38px auto 0;
+}
+
+.back_nav p {
+    margin: 0;
+
+    font-size: 84px;
+    font-weight: 700;
+    line-height: 1.05;
+
+    letter-spacing: -0.05em;
+}
+
 
 /* =========================================================
    INDIVIDUAL LINKS
@@ -329,6 +346,16 @@ main {
         max-width: 330px;
     }
 }
+
+
+    .back_nav {
+        margin-top: 65px;
+    }
+
+    .back_nav p {
+        font-size: 48px;
+        line-height: 0.95;
+    }
 
 
 /* Hide page until the red screen has covered it */
