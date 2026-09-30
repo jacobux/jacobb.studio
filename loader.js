@@ -21,10 +21,6 @@ if (!loader) {
     canvas.style.width = "100vw";
     canvas.style.height = "100vh";
     canvas.style.pointerEvents = "none";
-
-    /*
-     * Above the red loader AND page content.
-     */
     canvas.style.zIndex = "10000";
 
     document.body.appendChild(canvas);
@@ -36,22 +32,17 @@ if (!loader) {
 
     const DURATION = 2000;
 
-    /*
-     * Red loader begins moving down at 65%.
-     *
-     * 2000 × 0.65 = 1300ms
-     */
     const TRAIL_START = 1300;
 
     /*
-     * Number of particles generated per frame.
+     * Fewer particles.
      */
-    const PARTICLES_PER_FRAME = 10;
+    const PARTICLES_PER_FRAME = 4;
 
     /*
-     * Maximum number of particles alive.
+     * Maximum particles alive.
      */
-    const MAX_PARTICLES = 700;
+    const MAX_PARTICLES = 250;
 
 
     let particles = [];
@@ -95,10 +86,6 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
-        /*
-         * Don't create particles outside
-         * the visible viewport.
-         */
         if (
             edgeY < -20 ||
             edgeY > window.innerHeight + 20
@@ -107,52 +94,78 @@ if (!loader) {
         }
 
 
+        /* ---------------------------------------------
+           RANDOM SIZE
+           --------------------------------------------- */
+
+        /*
+         * Much wider size variation.
+         *
+         * Most particles will still be small,
+         * but occasionally a larger piece appears.
+         */
+        const size =
+            Math.random() < 0.75
+                ? Math.random() * 2.5 + 1
+                : Math.random() * 6 + 3;
+
+
+        /* ---------------------------------------------
+           RANDOM MOVEMENT
+           --------------------------------------------- */
+
+        /*
+         * Strong downward inertia.
+         *
+         * This represents the momentum inherited
+         * from the red loader moving downward.
+         */
+        const velocityY =
+            Math.random() * 4 + 3;
+
+
         particles.push({
 
-            /*
-             * Random horizontal position.
-             */
             x:
                 Math.random() *
                 window.innerWidth,
 
-            /*
-             * Start at the moving TOP edge
-             * of the red loader.
-             */
             y:
                 edgeY,
 
-            /*
-             * Slightly larger particles
-             * so the effect is easy to see.
-             */
             size:
-                Math.random() * 2.5 + 1.5,
+                size,
 
-            /*
-             * Slight horizontal drift.
-             */
+            originalSize:
+                size,
+
             velocityX:
-                (Math.random() - 0.5) * 1.8,
+                (Math.random() - 0.5) * 2.5,
 
-            /*
-             * Drift DOWNWARD after being
-             * left behind by the red panel.
-             */
             velocityY:
-                Math.random() * 1.5 + 0.5,
+                velocityY,
 
             /*
-             * Fully visible initially.
+             * How quickly the particle shrinks.
              */
-            opacity: 1,
+            shrink:
+                Math.random() * 0.12 + 0.08,
 
             /*
-             * Fade speed.
+             * Lifetime.
+             *
+             * Smaller number = faster disappearance.
              */
-            fade:
-                Math.random() * 0.018 + 0.012
+            life:
+                Math.random() * 12 + 10,
+
+            maxLife:
+                1,
+
+            /*
+             * Fully solid when created.
+             */
+            opacity: 1
         });
     }
 
@@ -166,14 +179,6 @@ if (!loader) {
         const rect =
             loader.getBoundingClientRect();
 
-        /*
-         * IMPORTANT:
-         *
-         * The red loader moves DOWNWARD.
-         *
-         * Therefore its TOP edge is the
-         * visible moving boundary.
-         */
         return rect.top;
     }
 
@@ -187,9 +192,10 @@ if (!loader) {
         particles = particles.filter(
             particle => {
 
-                /*
-                 * Move.
-                 */
+                /* -----------------------------------------
+                   MOVEMENT
+                   ----------------------------------------- */
+
                 particle.x +=
                     particle.velocityX;
 
@@ -198,19 +204,53 @@ if (!loader) {
 
 
                 /*
-                 * Fade.
+                 * Slightly reduce downward velocity
+                 * over time.
+                 *
+                 * This creates a subtle sense of
+                 * momentum rather than constant speed.
                  */
-                particle.opacity -=
-                    particle.fade;
+                particle.velocityY *= 0.97;
+
+
+                /* -----------------------------------------
+                   SHRINK
+                   ----------------------------------------- */
+
+                particle.size -=
+                    particle.shrink;
+
+
+                /* -----------------------------------------
+                   LIFE
+                   ----------------------------------------- */
+
+                particle.life -= 1;
 
 
                 /*
-                 * Remove dead particles.
+                 * Keep particles completely solid
+                 * for most of their life.
+                 *
+                 * Only fade during the final moments.
                  */
                 if (
-                    particle.opacity <= 0 ||
-                    particle.y >
-                        window.innerHeight + 20
+                    particle.life < 3
+                ) {
+
+                    particle.opacity =
+                        particle.life / 3;
+                }
+
+
+                /* -----------------------------------------
+                   REMOVE
+                   ----------------------------------------- */
+
+                if (
+                    particle.size <= 0 ||
+                    particle.life <= 0 ||
+                    particle.opacity <= 0
                 ) {
                     return false;
                 }
@@ -230,13 +270,13 @@ if (!loader) {
                     Math.PI * 2
                 );
 
-             ctx.fillStyle =
-    `rgba(
-        255,
-        22,
-        9,
-        ${particle.opacity}
-    )`;
+                ctx.fillStyle =
+                    `rgba(
+                        255,
+                        22,
+                        9,
+                        ${particle.opacity}
+                    )`;
 
                 ctx.fill();
 
@@ -273,7 +313,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           CREATE PARTICLE TRAIL
+           PARTICLE EMISSION
            --------------------------------------------- */
 
         if (
@@ -285,10 +325,6 @@ if (!loader) {
                 getLoaderEdge();
 
 
-            /*
-             * Emit particles directly from
-             * the moving red edge.
-             */
             for (
                 let i = 0;
                 i < PARTICLES_PER_FRAME;
