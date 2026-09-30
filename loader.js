@@ -1,6 +1,6 @@
 /* =========================================================
    PAGE LOADER
-   SPIRALLING / SUBTLY GRAINY PARTICLES
+   SPIRALLING / CLEAN CIRCULAR PARTICLES
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
@@ -37,11 +37,11 @@ if (!loader) {
 
 
     /*
-     * VERY FEW PARTICLES
+     * FEWER PARTICLES
      */
     const PARTICLES_PER_FRAME = 1;
 
-    const MAX_PARTICLES = 38;
+    const MAX_PARTICLES = 30;
 
 
     let particles = [];
@@ -107,55 +107,6 @@ if (!loader) {
 
 
     /* =====================================================
-       CREATE SUBTLY GRAINY PARTICLE SHAPE
-       ===================================================== */
-
-    function createParticleShape(points) {
-
-        const shape = [];
-
-        for (
-            let i = 0;
-            i < points;
-            i++
-        ) {
-
-            const angle =
-                (
-                    Math.PI * 2
-                ) *
-                (
-                    i / points
-                );
-
-
-            /*
-             * VERY subtle edge variation.
-             *
-             * Keeps the particle almost perfectly
-             * round while adding a tiny organic
-             * amount of graininess.
-             */
-            const variation =
-                0.94 +
-                Math.random() * 0.12;
-
-
-            shape.push({
-
-                angle:
-                    angle,
-
-                radius:
-                    variation
-            });
-        }
-
-        return shape;
-    }
-
-
-    /* =====================================================
        CREATE PARTICLE
        ===================================================== */
 
@@ -207,9 +158,6 @@ if (!loader) {
 
             /*
              * VERY LARGE
-             *
-             * Rare enough that these feel like
-             * larger chunks breaking off.
              */
             size =
                 Math.random() * 15 + 24;
@@ -235,28 +183,19 @@ if (!loader) {
 
 
             /* ---------------------------------------------
-               SUBTLE GRAIN
-               --------------------------------------------- */
-
-            shape:
-                createParticleShape(
-                    Math.floor(
-                        Math.random() * 4
-                    ) + 16
-                ),
-
-
-            /* ---------------------------------------------
                MOVEMENT
                --------------------------------------------- */
 
             /*
-             * Initial downward movement.
+             * Initial sideways movement.
              */
             velocityX:
                 (Math.random() - 0.5) *
                 2.5,
 
+            /*
+             * Strong initial downward movement.
+             */
             velocityY:
                 Math.random() * 3.5 +
                 5.5,
@@ -271,8 +210,7 @@ if (!loader) {
 
 
             /*
-             * Slowly changes the curve over
-             * the particle's travel.
+             * Slowly changes the curve.
              */
             curveVelocity:
                 (Math.random() - 0.5) *
@@ -281,9 +219,6 @@ if (!loader) {
 
             /*
              * Momentum retention.
-             *
-             * High value = particles travel
-             * farther before slowing.
              */
             friction:
                 0.965,
@@ -316,9 +251,6 @@ if (!loader) {
                PHASES
                --------------------------------------------- */
 
-            /*
-             * Travel / spiral phase.
-             */
             phase:
                 "travel",
 
@@ -327,8 +259,7 @@ if (!loader) {
 
 
             /*
-             * Long enough for the particle to
-             * visibly travel away from the line.
+             * Travel before settling.
              */
             travelTime:
                 Math.random() * 12 +
@@ -336,7 +267,7 @@ if (!loader) {
 
 
             /*
-             * Transition from stretched to round.
+             * Transition to round.
              */
             settleTime:
                 Math.random() * 7 +
@@ -344,7 +275,7 @@ if (!loader) {
 
 
             /*
-             * Slightly shorter stationary period.
+             * Shorter stationary period.
              */
             lingerTime:
                 Math.random() * 18 +
@@ -352,7 +283,7 @@ if (!loader) {
 
 
             /*
-             * Very quick pop.
+             * Quick pop.
              */
             popTime:
                 7,
@@ -411,22 +342,14 @@ if (!loader) {
                 ) {
 
                     /*
-                     * ---------------------------------------------
-                     * CURVED MOTION
-                     * ---------------------------------------------
-                     */
-
-                    /*
-                     * Horizontal velocity changes
-                     * continuously, producing the curved
-                     * / spiralling trajectory.
+                     * Curve the particle's path.
                      */
                     particle.velocityX +=
                         particle.curve;
 
 
                     /*
-                     * Slowly change the curve itself.
+                     * Slowly change the curve.
                      */
                     particle.curve +=
                         particle.curveVelocity;
@@ -453,14 +376,14 @@ if (!loader) {
 
 
                     /*
-                     * Tiny gravitational influence.
+                     * Tiny gravity.
                      */
                     particle.velocityY +=
                         particle.gravity;
 
 
                     /*
-                     * Rotate as it travels.
+                     * Rotate as it moves.
                      */
                     particle.rotation +=
                         particle.rotationSpeed;
@@ -481,7 +404,6 @@ if (!loader) {
 
                     /*
                      * Fast = stretched.
-                     *
                      * Slow = round.
                      */
                     const stretch =
@@ -507,7 +429,7 @@ if (!loader) {
 
 
                     /*
-                     * End travel phase.
+                     * Finish travel.
                      */
                     if (
                         particle.phaseTime >=
@@ -532,8 +454,7 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Continue moving while
-                     * becoming round.
+                     * Continue moving.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -543,8 +464,8 @@ if (!loader) {
 
 
                     /*
-                     * Gradually lose the remaining
-                     * momentum.
+                     * Kill remaining momentum
+                     * gradually.
                      */
                     particle.velocityX *=
                         0.88;
@@ -571,7 +492,7 @@ if (!loader) {
 
 
                     /*
-                     * Long → round.
+                     * Stretch → round.
                      */
                     const stretch =
                         1 +
@@ -609,7 +530,7 @@ if (!loader) {
 
 
                         /*
-                         * Freeze at the final position.
+                         * Freeze.
                          */
                         particle.velocityX =
                             0;
@@ -676,7 +597,7 @@ if (!loader) {
 
 
                     /*
-                     * Very fast collapse.
+                     * Fast collapse.
                      */
                     const pop =
                         1 -
@@ -693,7 +614,7 @@ if (!loader) {
 
 
                     /*
-                     * Fade only toward the end.
+                     * Fade toward the end.
                      */
                     if (
                         progress > 0.55
@@ -722,7 +643,7 @@ if (!loader) {
 
 
                 /* =================================================
-                   DRAW
+                   DRAW CLEAN CIRCLE
                    ================================================= */
 
                 ctx.save();
@@ -745,49 +666,16 @@ if (!loader) {
                 );
 
 
-                /*
-                 * DRAW SUBTLY IRREGULAR PARTICLE
-                 */
                 ctx.beginPath();
 
 
-                particle.shape.forEach(
-                    (point, index) => {
-
-                        const x =
-                            Math.cos(
-                                point.angle
-                            ) *
-                            particle.size *
-                            point.radius;
-
-                        const y =
-                            Math.sin(
-                                point.angle
-                            ) *
-                            particle.size *
-                            point.radius;
-
-
-                        if (index === 0) {
-
-                            ctx.moveTo(
-                                x,
-                                y
-                            );
-
-                        } else {
-
-                            ctx.lineTo(
-                                x,
-                                y
-                            );
-                        }
-                    }
+                ctx.arc(
+                    0,
+                    0,
+                    particle.size,
+                    0,
+                    Math.PI * 2
                 );
-
-
-                ctx.closePath();
 
 
                 ctx.fillStyle =
@@ -841,7 +729,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           EMIT PARTICLES
+           EMIT
            --------------------------------------------- */
 
         if (
@@ -858,16 +746,9 @@ if (!loader) {
                 MAX_PARTICLES
             ) {
 
-                for (
-                    let i = 0;
-                    i < PARTICLES_PER_FRAME;
-                    i++
-                ) {
-
-                    createParticle(
-                        edgeY
-                    );
-                }
+                createParticle(
+                    edgeY
+                );
             }
         }
 
@@ -905,4 +786,5 @@ if (!loader) {
     requestAnimationFrame(
         animate
     );
+}
 }
