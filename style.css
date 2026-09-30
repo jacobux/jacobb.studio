@@ -178,9 +178,10 @@ main {
     .vacancy p {
         font-size: 48px;
          padding: 6px 12px;
-         colour: #000000;
+         max-width: 360px;
+         color: #000000;
          background-color: #FF1609;
-         border-radius: 3px
+         border-radius: 5px
         line-height: 0.95;
     }
 }
@@ -539,3 +540,27 @@ main,
     }
 
 }
+
+/* =========================================================
+   PAGE EXIT
+   ========================================================= */
+
+body.page-exiting main,
+body.page-exiting .back_nav {
+    animation: pageExitDown 350ms ease-in forwards;
+}
+
+@keyframes pageExitDown {
+
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(100vh);
+    }
+
+}
+
