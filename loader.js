@@ -1,3 +1,7 @@
+/* =========================================================
+   PAGE LOADER + PARTICLE TRAIL
+   ========================================================= */
+
 const loader = document.querySelector(".page-loader");
 
 if (!loader) {
@@ -9,20 +13,14 @@ if (!loader) {
        ===================================================== */
 
     const canvas = document.createElement("canvas");
-
     const ctx = canvas.getContext("2d");
 
     canvas.style.position = "fixed";
     canvas.style.left = "0";
     canvas.style.top = "0";
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
+    canvas.style.width = "100vw";
+    canvas.style.height = "100vh";
     canvas.style.pointerEvents = "none";
-
-    /*
-     * Above the red loader so the particles
-     * can be seen as they leave its edge.
-     */
     canvas.style.zIndex = "10000";
 
     document.body.appendChild(canvas);
@@ -35,15 +33,25 @@ if (!loader) {
     const DURATION = 2000;
 
     /*
-     * Red starts sliding away at 65% of
-     * the 2 second animation.
+     * The red loader begins moving downward at 65%.
      *
-     * 2000 × 0.65 = 1300ms
+     * 2000ms × 0.65 = 1300ms
      */
     const TRAIL_START = 1300;
 
-    let particles = [];
+    /*
+     * Number of particles generated per frame.
+     */
+    const PARTICLES_PER_FRAME = 8;
 
+    /*
+     * Maximum number of particles
+     * allowed to exist at once.
+     */
+    const MAX_PARTICLES = 500;
+
+
+    let particles = [];
     let startTime = null;
 
 
@@ -55,11 +63,11 @@ if (!loader) {
 
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width =
-            window.innerWidth * dpr;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
 
-        canvas.height =
-            window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
 
         ctx.setTransform(
             dpr,
@@ -78,43 +86,50 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
+        /*
+         * Only create particles while the red edge
+         * is actually inside the viewport.
+         */
+        if (edgeY < 0 || edgeY > window.innerHeight) {
+            return;
+        }
+
         particles.push({
 
             /*
-             * Random horizontal position
-             * across the moving red edge.
+             * Random horizontal position.
              */
             x:
                 Math.random() *
                 window.innerWidth,
 
             /*
-             * Start exactly at the
-             * bottom of the red panel.
+             * Start directly on the red edge.
              */
-            y: edgeY,
+            y:
+                edgeY,
 
             /*
-             * Small particles.
+             * Small random particle size.
              */
             size:
-                Math.random() * 3 + 1,
+                Math.random() * 2.5 + 1,
 
             /*
-             * Slight horizontal drift.
+             * Slight horizontal movement.
              */
             velocityX:
-                (Math.random() - 0.5) * 1.8,
+                (Math.random() - 0.5) * 1.5,
 
             /*
-             * Particles fall away
-             * from the red edge.
+             * Particles drift downward
+             * after being released.
              */
             velocityY:
-                Math.random() * 2 + 0.5,
+                Math.random() * 1.5 + 0.5,
 
             /*
-             * Fully visible initially.
+             * Initial opacity.
              */
             opacity: 1,
 
@@ -122,8 +137,86 @@ if (!loader) {
              * Random fade speed.
              */
             fade:
-                Math.random() * 0.025 + 0.015
+                Math.random() * 0.018 + 0.012
         });
+    }
+
+
+    /* =====================================================
+       GET LOADER EDGE
+       ===================================================== */
+
+    function getLoaderEdge() {
+
+        /*
+         * Get the loader's actual position
+         * on screen.
+         */
+        const rect = loader.getBoundingClientRect();
+
+        /*
+         * rect.bottom is the actual bottom edge
+         * of the red loader.
+         */
+        return rect.bottom;
+    }
+
+
+    /* =====================================================
+       DRAW PARTICLES
+       ===================================================== */
+
+    function drawParticles() {
+
+        particles = particles.filter(
+            particle => {
+
+                /*
+                 * Move particle.
+                 */
+                particle.x += particle.velocityX;
+                particle.y += particle.velocityY;
+
+                /*
+                 * Fade particle.
+                 */
+                particle.opacity -= particle.fade;
+
+
+                /*
+                 * Remove particles that
+                 * have completely faded.
+                 */
+                if (
+                    particle.opacity <= 0 ||
+                    particle.y > window.innerHeight + 20
+                ) {
+                    return false;
+                }
+
+
+                /* -----------------------------------------
+                   DRAW
+                   ----------------------------------------- */
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    particle.x,
+                    particle.y,
+                    particle.size,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    `rgba(255, 255, 255, ${particle.opacity})`;
+
+                ctx.fill();
+
+                return true;
+            }
+        );
     }
 
 
@@ -154,7 +247,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           PARTICLE TRAIL
+           PARTICLE EMISSION
            --------------------------------------------- */
 
         if (
@@ -163,104 +256,42 @@ if (!loader) {
         ) {
 
             /*
-             * Progress through the slide-out.
-             *
-             * 0 = starts sliding
-             * 1 = completely off screen
-             */
-            const progress =
-                (elapsed - TRAIL_START) /
-                (DURATION - TRAIL_START);
-
-
-            /*
-             * This is the bottom edge of
-             * the red panel.
-             *
-             * At the beginning of the slide
-             * it is at the bottom of the screen.
-             *
-             * It then travels downward.
+             * Get the ACTUAL current bottom edge
+             * of the red loader.
              */
             const edgeY =
-                window.innerHeight +
-                (
-                    progress *
-                    window.innerHeight
-                );
+                getLoaderEdge();
 
 
             /*
-             * Emit several particles
-             * every frame.
+             * Create particles at the edge.
              */
-            for (let i = 0; i < 6; i++) {
+            for (
+                let i = 0;
+                i < PARTICLES_PER_FRAME;
+                i++
+            ) {
 
-                createParticle(edgeY);
+                if (
+                    particles.length <
+                    MAX_PARTICLES
+                ) {
+
+                    createParticle(edgeY);
+                }
             }
         }
 
 
         /* ---------------------------------------------
-           UPDATE + DRAW PARTICLES
+           UPDATE + DRAW
            --------------------------------------------- */
 
-        particles = particles.filter(
-            particle => {
-
-                particle.x +=
-                    particle.velocityX;
-
-                particle.y +=
-                    particle.velocityY;
-
-                particle.opacity -=
-                    particle.fade;
-
-
-                /*
-                 * Remove dead particles.
-                 */
-                if (particle.opacity <= 0) {
-                    return false;
-                }
-
-
-                /* -------------------------------------
-                   DRAW PARTICLE
-                   ------------------------------------- */
-
-                ctx.beginPath();
-
-                ctx.arc(
-                    particle.x,
-                    particle.y,
-                    particle.size,
-                    0,
-                    Math.PI * 2
-                );
-
-                /*
-                 * White particles against
-                 * the red loader.
-                 */
-                ctx.fillStyle =
-                    `rgba(
-                        255,
-                        255,
-                        255,
-                        ${particle.opacity}
-                    )`;
-
-                ctx.fill();
-
-                return true;
-            }
-        );
+        drawParticles();
 
 
         /* ---------------------------------------------
-           CONTINUE ANIMATION
+           CONTINUE
            --------------------------------------------- */
 
         requestAnimationFrame(animate);
