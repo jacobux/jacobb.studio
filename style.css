@@ -51,7 +51,7 @@ main {
     width: 100%;
     min-height: 100vh;
 
-     padding: 264px 64px 64px;
+    padding: 264px 64px 64px;
 
     text-align: center;
 }
@@ -140,11 +140,19 @@ main {
     letter-spacing: -0.05em;
 }
 
+
+/* =========================================================
+   BACK NAV
+   ========================================================= */
+
 .back_nav {
+    position: absolute;
+
     width: 100%;
     max-width: 900px;
 
-    margin: 38px auto 0;
+    margin: 38px;
+
     z-index: 100;
 }
 
@@ -182,21 +190,6 @@ main {
     color: #FF1609;
 }
 
-  .back_nav {
-    position: absolute;
-
-    margin: 38px;
-}
-
-.back_nav p {
-
-    font-size: 84px;
-    font-weight: 700;
-    line-height: 1.05;
-
-    letter-spacing: -0.05em;
-}
-
 .back_nav a:hover {
     color: #FF1609;
 }
@@ -209,7 +202,7 @@ main {
 @media (max-width: 767px) {
 
     main {
-         padding: 264px 64px 64px;
+        padding: 264px 64px 64px;
 
         text-align: center;
     }
@@ -229,16 +222,16 @@ main {
        Top Video
        ------------------------- */
 
- .top-video {
-    width: 50%;
-    margin: -64px auto 0;
-}
+    .top-video {
+        width: 50%;
+        margin: -64px auto 0;
+    }
 
-.top-video video {
-    display: block;
-    width: 100%;
-    height: auto;
-}
+    .top-video video {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
 
 
     /* -------------------------
@@ -292,6 +285,20 @@ main {
     .links a:first-child {
         max-width: 360px;
     }
+
+
+    /* -------------------------
+       Back Navigation
+       ------------------------- */
+
+    .back_nav {
+        margin-top: 38px;
+    }
+
+    .back_nav p {
+        font-size: 84px;
+        line-height: 1.05;
+    }
 }
 
 
@@ -302,7 +309,7 @@ main {
 @media (max-width: 450px) {
 
     main {
-       padding: 264px 16px 64px;
+        padding: 264px 16px 64px;
     }
 
 
@@ -346,11 +353,15 @@ main {
     .links a:first-child {
         max-width: 330px;
     }
-}
 
+
+    /* -------------------------
+       Back Navigation
+       ------------------------- */
 
     .back_nav {
         margin-top: 65px;
+
         z-index: 100;
     }
 
@@ -358,18 +369,25 @@ main {
         font-size: 48px;
         line-height: 0.95;
     }
+}
 
 
 /* =========================================================
-   PAGE LOAD ANIMATION
+   PAGE LOAD — PAGE CONTENT
    ========================================================= */
 
-main {
+main,
+.back_nav {
     opacity: 0;
-    animation: pageAppear 2s forwards;
+
+    animation:
+        pageAppear 2s
+        linear
+        forwards;
 }
 
 @keyframes pageAppear {
+
     0%,
     40% {
         opacity: 0;
@@ -388,38 +406,49 @@ main {
 
 .page-loader {
     position: fixed;
+
     inset: 0;
 
     background: #FF1609;
 
     z-index: 9999;
+
     overflow: visible;
 
     transform-origin: top;
 
-    animation: redReveal 2s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    animation:
+        redReveal 2s
+        cubic-bezier(0.76, 0, 0.24, 1)
+        forwards;
 }
 
 @keyframes redReveal {
 
-    /* Thin line at the top */
+    /* Thin line */
+
     0% {
         transform: scaleY(0.01);
     }
 
-    /* Grow until the entire screen is covered */
+
+    /* Expand to cover the entire page */
+
     40% {
         transform: scaleY(1);
     }
 
-    /* Hold while the page appears underneath */
+
+    /* Hold over the loaded page */
+
     65% {
         transform: scaleY(1);
     }
 
-    /* Slide down and disappear */
+
+    /* Slide completely downward */
+
     100% {
         transform: translateY(100%);
     }
-}
 }
