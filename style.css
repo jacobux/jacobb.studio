@@ -171,7 +171,7 @@ main {
        ------------------------- */
 
     .vacancy {
-        margin-top: 65px;
+        margin-top: 35px;
         display: flex;
        justify-content: center; 
        align-items: center;         
@@ -193,7 +193,7 @@ main {
     }
 
     .vacancymessage p {
-        font-size: 24px;
+        font-size: 12px;
         font-weight: 200px;
         line-height: 0.95;
     }
