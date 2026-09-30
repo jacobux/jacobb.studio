@@ -41,7 +41,8 @@ if (!loader) {
 
     function resizeCanvas() {
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr =
+            window.devicePixelRatio || 1;
 
         canvas.width =
             window.innerWidth * dpr;
@@ -71,13 +72,26 @@ if (!loader) {
        ===================================================== */
 
     function easeOut(t) {
-        return 1 - Math.pow(1 - t, 3);
+
+        return 1 -
+            Math.pow(
+                1 - t,
+                3
+            );
     }
 
+
     function easeInOut(t) {
+
         return t < 0.5
+
             ? 4 * t * t * t
-            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+            : 1 -
+              Math.pow(
+                  -2 * t + 2,
+                  3
+              ) / 2;
     }
 
 
@@ -89,7 +103,9 @@ if (!loader) {
 
         let size;
 
-        const random = Math.random();
+        const random =
+            Math.random();
+
 
         if (random < 0.45) {
 
@@ -115,6 +131,8 @@ if (!loader) {
 
         particles.push({
 
+            /* Position */
+
             x:
                 Math.random() *
                 window.innerWidth,
@@ -122,20 +140,24 @@ if (!loader) {
             y:
                 edgeY,
 
+
             size:
                 size,
 
 
-            /* Movement */
+            /* =============================================
+               CONTINUOUS MOTION
+               ============================================= */
 
             velocityX:
-                (Math.random() - 0.5) * 2.5,
+                0,
 
             velocityY:
-                Math.random() * 3.5 + 5.5,
+                5.5 +
+                Math.random() * 3.5,
 
 
-            /* Curved movement */
+            /* Curve */
 
             curve:
                 (Math.random() - 0.5) * 0.18,
@@ -150,19 +172,25 @@ if (!loader) {
                 0.965,
 
             gravity:
-                Math.random() * 0.025 + 0.015,
+                Math.random() * 0.025 +
+                0.015,
 
 
-            /* Animation */
+            /* =============================================
+               TIMING
+               ============================================= */
 
             phase:
-                "travel",
+                "stretch",
 
             phaseTime:
                 0,
 
-            travelTime:
-                Math.random() * 12 + 15,
+            stretchTime:
+                Math.random() * 5 + 6,
+
+            trailTime:
+                Math.random() * 16 + 24,
 
             lingerTime:
                 Math.random() * 18 + 28,
@@ -177,7 +205,7 @@ if (!loader) {
                 0.45,
 
             scaleY:
-                2.5,
+                1,
 
 
             opacity:
@@ -209,19 +237,132 @@ if (!loader) {
 
 
             /* =============================================
-               MOVEMENT + STRETCH
+               STRETCH / BREAK AWAY
                ============================================= */
 
             if (
                 particle.phase ===
-                "travel"
+                "stretch"
+            ) {
+
+                const progress =
+                    Math.min(
+                        1,
+                        particle.phaseTime /
+                        particle.stretchTime
+                    );
+
+
+                const eased =
+                    easeOut(progress);
+
+
+                /*
+                   The particle moves vertically using
+                   its actual velocity.
+
+                   X remains locked while attached.
+                */
+
+                particle.velocityX =
+                    0;
+
+
+                /*
+                   Gradually reduce downward velocity
+                   as the particle stretches.
+
+                   This creates a smooth "pulling away"
+                   rather than a fixed-speed movement.
+                */
+
+                const stretchDrag =
+                    1 -
+                    (
+                        eased *
+                        0.55
+                    );
+
+
+                particle.velocityY *=
+                    stretchDrag;
+
+
+                particle.velocityY +=
+                    particle.gravity *
+                    0.15;
+
+
+                particle.y +=
+                    particle.velocityY;
+
+
+                /*
+                   Vertical stretch.
+                */
+
+                particle.scaleX =
+                    0.45 +
+                    (0.55 * eased);
+
+
+                particle.scaleY =
+                    1 +
+                    (3.5 * eased);
+
+
+                /*
+                   Once the stretch reaches its end,
+                   the particle naturally breaks away.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.stretchTime
+                ) {
+
+                    particle.phase =
+                        "trail";
+
+                    particle.phaseTime =
+                        0;
+
+
+                    /*
+                       Give it sideways momentum,
+                       but preserve the Y velocity it
+                       already has.
+
+                       This prevents a mechanical jump.
+                    */
+
+                    particle.velocityX =
+                        (
+                            Math.random() -
+                            0.5
+                        ) * 2.5;
+
+
+                    particle.scaleX =
+                        1;
+
+                    particle.scaleY =
+                        1;
+                }
+            }
+
+
+            /* =============================================
+               TRAIL
+               ============================================= */
+
+            else if (
+                particle.phase ===
+                "trail"
             ) {
 
                 /*
-                   The particle moves immediately.
-
-                   This is intentionally NOT separated
-                   into a stationary stretch phase.
+                   Curve develops gradually.
                 */
 
                 particle.velocityX +=
@@ -231,6 +372,10 @@ if (!loader) {
                     particle.curveVelocity;
 
 
+                /*
+                   Continue the existing velocity.
+                */
+
                 particle.x +=
                     particle.velocityX;
 
@@ -238,7 +383,9 @@ if (!loader) {
                     particle.velocityY;
 
 
-                /* Inertia */
+                /*
+                   Friction gradually removes momentum.
+                */
 
                 particle.velocityX *=
                     particle.friction;
@@ -247,66 +394,44 @@ if (!loader) {
                     particle.friction;
 
 
-                /* Gravity */
+                /*
+                   Gravity continues naturally.
+                */
 
                 particle.velocityY +=
                     particle.gravity;
 
 
                 /*
-                   Calculate movement speed.
-
-                   This controls how stretched the
-                   particle appears.
+                   The particle becomes round as it
+                   separates from the stretched state.
                 */
 
-                const speed =
-                    Math.sqrt(
-                        particle.velocityX *
-                        particle.velocityX +
-
-                        particle.velocityY *
-                        particle.velocityY
-                    );
-
-
-                /*
-                   STRETCH
-
-                   The particle starts elongated and
-                   naturally becomes round as its motion
-                   settles.
-
-                   It is ALWAYS vertically aligned.
-                */
-
-                const stretch =
+                const progress =
                     Math.min(
-                        4.5,
-                        1 + speed * 0.42
+                        1,
+                        particle.phaseTime / 8
                     );
 
 
-                particle.scaleY =
-                    stretch;
+                const eased =
+                    easeOut(progress);
 
 
                 particle.scaleX =
-                    Math.max(
-                        0.32,
-                        1 - speed * 0.055
-                    );
+                    1;
+
+                particle.scaleY =
+                    1;
 
 
                 /*
-                   After the initial burst of movement,
-                   smoothly transition into the lingering
-                   phase.
+                   End the active movement naturally.
                 */
 
                 if (
                     particle.phaseTime >=
-                    particle.travelTime
+                    particle.trailTime
                 ) {
 
                     particle.phase =
@@ -315,17 +440,16 @@ if (!loader) {
                     particle.phaseTime =
                         0;
 
+                    /*
+                       Only now does the particle
+                       become stationary.
+                    */
+
                     particle.velocityX =
                         0;
 
                     particle.velocityY =
                         0;
-
-                    particle.scaleX =
-                        1;
-
-                    particle.scaleY =
-                        1;
                 }
             }
 
@@ -422,6 +546,7 @@ if (!loader) {
 
             ctx.save();
 
+
             ctx.translate(
                 particle.x,
                 particle.y
@@ -429,13 +554,10 @@ if (!loader) {
 
 
             /*
-               IMPORTANT:
-
                No rotation.
 
-               The particle's movement can curve,
-               but its stretched shape stays vertically
-               aligned with the screen.
+               Stretch always stays aligned to
+               the vertical screen axis.
             */
 
             ctx.scale(
@@ -481,7 +603,8 @@ if (!loader) {
     function animate(timestamp) {
 
         if (startTime === null) {
-            startTime = timestamp;
+            startTime =
+                timestamp;
         }
 
 
@@ -498,15 +621,15 @@ if (!loader) {
         );
 
 
-        /*
-           Create particles while the red loader
-           is sliding away.
-        */
-
         if (
-            elapsed >= TRAIL_START &&
-            elapsed <= DURATION &&
-            particles.length < MAX_PARTICLES
+            elapsed >=
+            TRAIL_START &&
+
+            elapsed <=
+            DURATION &&
+
+            particles.length <
+            MAX_PARTICLES
         ) {
 
             createParticle(
