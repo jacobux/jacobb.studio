@@ -166,6 +166,35 @@ main {
     letter-spacing: -0.05em;
 }
 
+  /* -------------------------
+       Vacancy
+       ------------------------- */
+
+    .vacancy {
+        margin-top: 65px;
+          padding: 6px 12px;
+         background-color: #FF1609;
+          border-radius: 10px
+          
+    }
+
+    .vacancy p {
+        font-size: 48px;
+        line-height: 0.95;
+    }
+}
+
+ .vacancymessage {
+        margin-top: 12px;
+    }
+
+    .vacancymessage p {
+        font-size: 24px;
+        font-weight: 300px;
+        line-height: 0.95;
+    }
+}
+
 
 /* =========================================================
    INDIVIDUAL LINKS
