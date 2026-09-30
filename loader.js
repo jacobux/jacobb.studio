@@ -4,49 +4,146 @@ if (!loader) {
     console.warn("Page loader not found.");
 } else {
 
+    /* =====================================================
+       CANVAS
+       ===================================================== */
+
     const canvas = document.createElement("canvas");
+
     const ctx = canvas.getContext("2d");
 
     canvas.style.position = "fixed";
-    canvas.style.inset = "0";
+    canvas.style.left = "0";
+    canvas.style.top = "0";
     canvas.style.width = "100%";
     canvas.style.height = "100%";
     canvas.style.pointerEvents = "none";
+
+    /*
+     * Above the red loader so the particles
+     * can be seen as they leave its edge.
+     */
     canvas.style.zIndex = "10000";
 
     document.body.appendChild(canvas);
 
+
+    /* =====================================================
+       SETTINGS
+       ===================================================== */
+
+    const DURATION = 2000;
+
+    /*
+     * Red starts sliding away at 65% of
+     * the 2 second animation.
+     *
+     * 2000 × 0.65 = 1300ms
+     */
+    const TRAIL_START = 1300;
+
     let particles = [];
 
+    let startTime = null;
+
+
+    /* =====================================================
+       CANVAS SIZE
+       ===================================================== */
+
     function resizeCanvas() {
+
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
+        canvas.width =
+            window.innerWidth * dpr;
 
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
+        canvas.height =
+            window.innerHeight * dpr;
 
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            0,
+            0
+        );
     }
 
-    function addParticle(x, y) {
+
+    /* =====================================================
+       CREATE PARTICLE
+       ===================================================== */
+
+    function createParticle(edgeY) {
+
         particles.push({
-            x: x,
-            y: y,
 
-            size: Math.random() * 3 + 1,
+            /*
+             * Random horizontal position
+             * across the moving red edge.
+             */
+            x:
+                Math.random() *
+                window.innerWidth,
 
-            velocityX: (Math.random() - 0.5) * 2,
-            velocityY: Math.random() * 2 + 0.5,
+            /*
+             * Start exactly at the
+             * bottom of the red panel.
+             */
+            y: edgeY,
 
-            life: 1,
+            /*
+             * Small particles.
+             */
+            size:
+                Math.random() * 3 + 1,
 
-            fade: Math.random() * 0.025 + 0.02
+            /*
+             * Slight horizontal drift.
+             */
+            velocityX:
+                (Math.random() - 0.5) * 1.8,
+
+            /*
+             * Particles fall away
+             * from the red edge.
+             */
+            velocityY:
+                Math.random() * 2 + 0.5,
+
+            /*
+             * Fully visible initially.
+             */
+            opacity: 1,
+
+            /*
+             * Random fade speed.
+             */
+            fade:
+                Math.random() * 0.025 + 0.015
         });
     }
 
-    function animate() {
+
+    /* =====================================================
+       ANIMATION
+       ===================================================== */
+
+    function animate(timestamp) {
+
+        if (startTime === null) {
+            startTime = timestamp;
+        }
+
+        const elapsed =
+            timestamp - startTime;
+
+
+        /* ---------------------------------------------
+           CLEAR CANVAS
+           --------------------------------------------- */
 
         ctx.clearRect(
             0,
@@ -55,58 +152,124 @@ if (!loader) {
             window.innerHeight
         );
 
-        const rect = loader.getBoundingClientRect();
 
-        /*
-         * The particles are created along the
-         * bottom edge of the red panel.
-         */
+        /* ---------------------------------------------
+           PARTICLE TRAIL
+           --------------------------------------------- */
+
         if (
-            rect.bottom > 0 &&
-            rect.bottom < window.innerHeight + 50
+            elapsed >= TRAIL_START &&
+            elapsed <= DURATION
         ) {
 
-            for (let i = 0; i < 5; i++) {
+            /*
+             * Progress through the slide-out.
+             *
+             * 0 = starts sliding
+             * 1 = completely off screen
+             */
+            const progress =
+                (elapsed - TRAIL_START) /
+                (DURATION - TRAIL_START);
 
-                addParticle(
-                    Math.random() * window.innerWidth,
-                    rect.bottom
+
+            /*
+             * This is the bottom edge of
+             * the red panel.
+             *
+             * At the beginning of the slide
+             * it is at the bottom of the screen.
+             *
+             * It then travels downward.
+             */
+            const edgeY =
+                window.innerHeight +
+                (
+                    progress *
+                    window.innerHeight
                 );
 
+
+            /*
+             * Emit several particles
+             * every frame.
+             */
+            for (let i = 0; i < 6; i++) {
+
+                createParticle(edgeY);
             }
         }
 
-        particles = particles.filter(particle => {
 
-            particle.x += particle.velocityX;
-            particle.y += particle.velocityY;
+        /* ---------------------------------------------
+           UPDATE + DRAW PARTICLES
+           --------------------------------------------- */
 
-            particle.life -= particle.fade;
+        particles = particles.filter(
+            particle => {
 
-            if (particle.life <= 0) {
-                return false;
+                particle.x +=
+                    particle.velocityX;
+
+                particle.y +=
+                    particle.velocityY;
+
+                particle.opacity -=
+                    particle.fade;
+
+
+                /*
+                 * Remove dead particles.
+                 */
+                if (particle.opacity <= 0) {
+                    return false;
+                }
+
+
+                /* -------------------------------------
+                   DRAW PARTICLE
+                   ------------------------------------- */
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    particle.x,
+                    particle.y,
+                    particle.size,
+                    0,
+                    Math.PI * 2
+                );
+
+                /*
+                 * White particles against
+                 * the red loader.
+                 */
+                ctx.fillStyle =
+                    `rgba(
+                        255,
+                        255,
+                        255,
+                        ${particle.opacity}
+                    )`;
+
+                ctx.fill();
+
+                return true;
             }
+        );
 
-            ctx.beginPath();
 
-            ctx.arc(
-                particle.x,
-                particle.y,
-                particle.size,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fillStyle =
-                `rgba(255,255,255,${particle.life})`;
-
-            ctx.fill();
-
-            return true;
-        });
+        /* ---------------------------------------------
+           CONTINUE ANIMATION
+           --------------------------------------------- */
 
         requestAnimationFrame(animate);
     }
+
+
+    /* =====================================================
+       START
+       ===================================================== */
 
     resizeCanvas();
 
@@ -115,5 +278,5 @@ if (!loader) {
         resizeCanvas
     );
 
-    animate();
+    requestAnimationFrame(animate);
 }
