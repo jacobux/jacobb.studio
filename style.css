@@ -145,6 +145,7 @@ main {
     max-width: 900px;
 
     margin: 38px auto 0;
+    z-index: 100;
 }
 
 .back_nav p {
@@ -350,6 +351,7 @@ main {
 
     .back_nav {
         margin-top: 65px;
+        z-index: 100;
     }
 
     .back_nav p {
