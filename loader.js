@@ -1,291 +1,843 @@
+/* =========================================================
+   PAGE LOADER + PARTICLE TRAIL
+   ========================================================= */
+
 const loader = document.querySelector(".page-loader");
 
-if (loader) {
+if (!loader) {
+    console.warn("No .page-loader found.");
+} else {
+
+    /* =====================================================
+       CANVAS
+       ===================================================== */
+
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    Object.assign(canvas.style, {
-        position: "fixed",
-        left: "0",
-        top: "0",
-        width: "100vw",
-        height: "100vh",
-        pointerEvents: "none",
-        zIndex: "10000"
-    });
+    canvas.style.position = "fixed";
+    canvas.style.left = "0";
+    canvas.style.top = "0";
+    canvas.style.width = "100vw";
+    canvas.style.height = "100vh";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "10000";
 
     document.body.appendChild(canvas);
 
+
+    /* =====================================================
+       SETTINGS
+       ===================================================== */
+
     const DURATION = 2000;
+
+    /*
+       Particles begin appearing when the red loader
+       starts sliding downward.
+    */
     const TRAIL_START = 1250;
+
+    /*
+       Maximum number of particles alive at once.
+    */
     const MAX_PARTICLES = 30;
+
+
+    /* =====================================================
+       STATE
+       ===================================================== */
 
     let particles = [];
     let startTime = null;
 
-    function resize() {
+
+    /* =====================================================
+       CANVAS RESIZE
+       ===================================================== */
+
+    function resizeCanvas() {
+
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width = innerWidth * dpr;
-        canvas.height = innerHeight * dpr;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
 
-        canvas.style.width = innerWidth + "px";
-        canvas.style.height = innerHeight + "px";
+        canvas.style.width =
+            window.innerWidth + "px";
 
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        canvas.style.height =
+            window.innerHeight + "px";
+
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            0,
+            0
+        );
     }
+
+
+    /* =====================================================
+       EASING
+       ===================================================== */
 
     function easeOut(t) {
-        return 1 - (1 - t) ** 3;
+
+        return 1 - Math.pow(
+            1 - t,
+            3
+        );
     }
+
 
     function easeInOut(t) {
+
         return t < 0.5
-            ? 4 * t ** 3
-            : 1 - (-2 * t + 2) ** 3 / 2;
+
+            ? 4 * t * t * t
+
+            : 1 -
+              Math.pow(
+                  -2 * t + 2,
+                  3
+              ) / 2;
     }
 
-    function addParticle() {
-        const y = loader.getBoundingClientRect().top;
+
+    /* =====================================================
+       CREATE PARTICLE
+       ===================================================== */
+
+    function createParticle(edgeY) {
+
+        /*
+           Random particle size.
+
+           Most particles are small,
+           with occasional larger pieces.
+        */
 
         let size;
-        const r = Math.random();
 
-        if (r < 0.45) {
-            size = Math.random() * 4 + 4;
-        } else if (r < 0.78) {
-            size = Math.random() * 7 + 7;
-        } else if (r < 0.95) {
-            size = Math.random() * 11 + 12;
+        const random =
+            Math.random();
+
+        if (random < 0.45) {
+
+            size =
+                Math.random() * 4 + 4;
+
+        } else if (random < 0.78) {
+
+            size =
+                Math.random() * 7 + 7;
+
+        } else if (random < 0.95) {
+
+            size =
+                Math.random() * 11 + 12;
+
         } else {
-            size = Math.random() * 15 + 24;
+
+            size =
+                Math.random() * 15 + 24;
         }
 
+
         particles.push({
-            x: Math.random() * innerWidth,
-            y,
 
-            size,
+            /* Position */
 
-            vx: (Math.random() - 0.5) * 2.5,
-            vy: Math.random() * 3.5 + 5.5,
+            x:
+                Math.random() *
+                window.innerWidth,
 
-            curve: (Math.random() - 0.5) * 0.18,
-            curveV: (Math.random() - 0.5) * 0.025,
+            y:
+                edgeY,
 
-            friction: 0.965,
-            gravity: Math.random() * 0.025 + 0.015,
 
-            phase: 0,
-            time: 0,
+            /* Size */
 
-            travel: Math.random() * 12 + 15,
-            settle: Math.random() * 7 + 7,
-            linger: Math.random() * 18 + 28,
-            pop: 7,
+            size:
 
-            scaleX: 0.45,
-            scaleY: 2.5,
 
-            opacity: 1
+                /* Movement */
+
+            velocityX:
+                (Math.random() - 0.5) * 2.5,
+
+            velocityY:
+                Math.random() * 3.5 + 5.5,
+
+
+            /* Curved movement */
+
+            curve:
+                (Math.random() - 0.5) * 0.18,
+
+            curveVelocity:
+                (Math.random() - 0.5) * 0.025,
+
+
+            /* Physics */
+
+            friction:
+                0.965,
+
+            gravity:
+                Math.random() * 0.025 + 0.015,
+
+
+            /* Animation */
+
+            phase:
+                "stretch",
+
+            phaseTime:
+                0,
+
+
+            /*
+               VERY SHORT stretch phase.
+
+               The particle stays almost completely
+               stationary during this period.
+            */
+
+            stretchTime:
+                Math.random() * 3 + 3,
+
+
+            /*
+               Short release phase.
+
+               The particle returns to a circle
+               before travelling.
+            */
+
+            releaseTime:
+                Math.random() * 4 + 4,
+
+
+            /*
+               How long it travels before settling.
+            */
+
+            travelTime:
+                Math.random() * 12 + 15,
+
+
+            /*
+               Short settling transition.
+            */
+
+            settleTime:
+                Math.random() * 6 + 6,
+
+
+            /*
+               Time spent sitting as a circle.
+            */
+
+            lingerTime:
+                Math.random() * 18 + 28,
+
+
+            /*
+               Final pop.
+            */
+
+            popTime:
+                7,
+
+
+            /* Shape */
+
+            scaleX:
+                0.35,
+
+            scaleY:
+                3.8,
+
+
+            /* Opacity */
+
+            opacity:
+                1
         });
     }
 
-    function update() {
-        particles = particles.filter(p => {
 
-            p.time++;
+    /* =====================================================
+       GET RED LOADER EDGE
+       ===================================================== */
 
-            /* TRAVEL */
-            if (p.phase === 0) {
+    function getLoaderEdge() {
 
-                p.vx += p.curve;
-                p.curve += p.curveV;
+        const rect =
+            loader.getBoundingClientRect();
 
-                p.x += p.vx;
-                p.y += p.vy;
+        return rect.top;
+    }
 
-                p.vx *= p.friction;
-                p.vy *= p.friction;
 
-                p.vy += p.gravity;
+    /* =====================================================
+       UPDATE PARTICLES
+       ===================================================== */
 
-                const speed = Math.hypot(p.vx, p.vy);
+    function updateParticles() {
 
-                /*
-                    IMPORTANT:
-                    Stretch is locked vertically.
-                    No rotation is applied.
-                */
-                p.scaleY = Math.min(
-                    4.5,
-                    1 + speed * 0.42
-                );
+        particles =
+            particles.filter(function (particle) {
 
-                p.scaleX = Math.max(
-                    0.32,
-                    1 - speed * 0.055
-                );
 
-                if (p.time >= p.travel) {
-                    p.phase = 1;
-                    p.time = 0;
-                }
-            }
+            /* =============================================
+               PHASE 1 — STRETCH
+               ============================================= */
 
-            /* SETTLE */
-            else if (p.phase === 1) {
+            if (
+                particle.phase ===
+                "stretch"
+            ) {
 
-                p.x += p.vx;
-                p.y += p.vy;
+                particle.phaseTime++;
 
-                p.vx *= 0.88;
-                p.vy *= 0.88;
-
-                p.vy += p.gravity * 0.35;
-
-                const t = Math.min(
-                    1,
-                    p.time / p.settle
-                );
-
-                const e = easeOut(t);
 
                 /*
-                    Gradually collapse the vertical stretch
-                    back into a circle.
+                   IMPORTANT:
+
+                   No movement happens here.
+
+                   The particle remains attached to
+                   the red edge while stretching.
                 */
-                p.scaleY = 4.5 - 3.5 * e;
 
-                p.scaleX =
-                    0.45 +
-                    0.55 * e;
+                particle.scaleX =
+                    0.35;
 
-                if (p.time >= p.settle) {
-                    p.phase = 2;
-                    p.time = 0;
+                particle.scaleY =
+                    3.8;
 
-                    p.vx = 0;
-                    p.vy = 0;
 
-                    p.scaleX = 1;
-                    p.scaleY = 1;
+                /*
+                   Very slight compression toward
+                   the final shape near the end.
+                */
+
+                const progress =
+                    Math.min(
+                        1,
+                        particle.phaseTime /
+                        particle.stretchTime
+                    );
+
+                const eased =
+                    easeOut(progress);
+
+                particle.scaleY =
+                    3.8 -
+                    (0.8 * eased);
+
+
+                /*
+                   Once the short stretch is complete,
+                   begin releasing the particle.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.stretchTime
+                ) {
+
+                    particle.phase =
+                        "release";
+
+                    particle.phaseTime =
+                        0;
                 }
             }
 
-            /* LINGER */
-            else if (p.phase === 2) {
 
-                p.scaleX = 1;
-                p.scaleY = 1;
+            /* =============================================
+               PHASE 2 — RELEASE / BECOME ROUND
+               ============================================= */
 
-                if (p.time >= p.linger) {
-                    p.phase = 3;
-                    p.time = 0;
+            else if (
+                particle.phase ===
+                "release"
+            ) {
+
+                particle.phaseTime++;
+
+
+                /*
+                   Still barely moving.
+
+                   The particle becomes round BEFORE
+                   it begins travelling.
+                */
+
+                const progress =
+                    Math.min(
+                        1,
+                        particle.phaseTime /
+                        particle.releaseTime
+                    );
+
+                const eased =
+                    easeOut(progress);
+
+
+                particle.scaleY =
+                    3 -
+                    (2 * eased);
+
+
+                particle.scaleX =
+                    0.35 +
+                    (0.65 * eased);
+
+
+                /*
+                   Begin movement only after
+                   the stretch has finished.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.releaseTime
+                ) {
+
+                    particle.phase =
+                        "travel";
+
+                    particle.phaseTime =
+                        0;
+
+                    particle.scaleX =
+                        1;
+
+                    particle.scaleY =
+                        1;
                 }
             }
 
-            /* POP */
-            else {
 
-                const t = Math.min(
-                    1,
-                    p.time / p.pop
-                );
+            /* =============================================
+               PHASE 3 — TRAVEL
+               ============================================= */
+
+            else if (
+                particle.phase ===
+                "travel"
+            ) {
+
+                particle.phaseTime++;
+
+
+                /*
+                   NOW the particle starts moving.
+
+                   It has already become round.
+                */
+
+                particle.velocityX +=
+                    particle.curve;
+
+                particle.curve +=
+                    particle.curveVelocity;
+
+
+                particle.x +=
+                    particle.velocityX;
+
+                particle.y +=
+                    particle.velocityY;
+
+
+                /*
+                   Inertia.
+                */
+
+                particle.velocityX *=
+                    particle.friction;
+
+                particle.velocityY *=
+                    particle.friction;
+
+
+                /*
+                   Gravity.
+                */
+
+                particle.velocityY +=
+                    particle.gravity;
+
+
+                /*
+                   Keep particle round.
+                */
+
+                particle.scaleX =
+                    1;
+
+                particle.scaleY =
+                    1;
+
+
+                /*
+                   Eventually transition
+                   into the settling phase.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.travelTime
+                ) {
+
+                    particle.phase =
+                        "settle";
+
+                    particle.phaseTime =
+                        0;
+                }
+            }
+
+
+            /* =============================================
+               PHASE 4 — SETTLE
+               ============================================= */
+
+            else if (
+                particle.phase ===
+                "settle"
+            ) {
+
+                particle.phaseTime++;
+
+
+                /*
+                   Continue the existing momentum,
+                   but quickly slow down.
+                */
+
+                particle.x +=
+                    particle.velocityX;
+
+                particle.y +=
+                    particle.velocityY;
+
+
+                particle.velocityX *=
+                    0.88;
+
+                particle.velocityY *=
+                    0.88;
+
+
+                particle.velocityY +=
+                    particle.gravity * 0.35;
+
+
+                /*
+                   Keep it round.
+                */
+
+                particle.scaleX =
+                    1;
+
+                particle.scaleY =
+                    1;
+
+
+                /*
+                   Stop moving once settled.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.settleTime
+                ) {
+
+                    particle.phase =
+                        "linger";
+
+                    particle.phaseTime =
+                        0;
+
+                    particle.velocityX =
+                        0;
+
+                    particle.velocityY =
+                        0;
+                }
+            }
+
+
+            /* =============================================
+               PHASE 5 — LINGER
+               ============================================= */
+
+            else if (
+                particle.phase ===
+                "linger"
+            ) {
+
+                particle.phaseTime++;
+
+
+                /*
+                   Completely round and stationary.
+                */
+
+                particle.scaleX =
+                    1;
+
+                particle.scaleY =
+                    1;
+
+
+                /*
+                   Then pop.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.lingerTime
+                ) {
+
+                    particle.phase =
+                        "pop";
+
+                    particle.phaseTime =
+                        0;
+                }
+            }
+
+
+            /* =============================================
+               PHASE 6 — POP
+               ============================================= */
+
+            else if (
+                particle.phase ===
+                "pop"
+            ) {
+
+                particle.phaseTime++;
+
+
+                const progress =
+                    Math.min(
+                        1,
+                        particle.phaseTime /
+                        particle.popTime
+                    );
+
+
+                /*
+                   Rapidly shrink.
+                */
 
                 const pop =
-                    1 - easeInOut(t);
+                    1 -
+                    easeInOut(progress);
 
-                p.scaleX = pop;
-                p.scaleY = pop;
 
-                if (t > 0.55) {
-                    p.opacity =
+                particle.scaleX =
+                    pop;
+
+                particle.scaleY =
+                    pop;
+
+
+                /*
+                   Fade near the end.
+                */
+
+                if (
+                    progress >
+                    0.55
+                ) {
+
+                    particle.opacity =
                         1 -
-                        (t - 0.55) / 0.45;
+                        (
+                            (
+                                progress -
+                                0.55
+                            ) /
+                            0.45
+                        );
                 }
 
-                if (p.time >= p.pop) {
+
+                /*
+                   Remove particle.
+                */
+
+                if (
+                    particle.phaseTime >=
+                    particle.popTime
+                ) {
+
                     return false;
                 }
             }
 
-            /* DRAW */
+
+            /* =============================================
+               DRAW
+               ============================================= */
 
             ctx.save();
 
+
             ctx.translate(
-                p.x,
-                p.y
+                particle.x,
+                particle.y
             );
+
 
             /*
-                NO ROTATION HERE.
+               IMPORTANT:
 
-                This guarantees that the stretched
-                particles remain perfectly vertical.
+               There is NO rotation.
+
+               This keeps the stretch perfectly
+               vertical on the screen.
             */
+
             ctx.scale(
-                p.scaleX,
-                p.scaleY
+                particle.scaleX,
+                particle.scaleY
             );
+
 
             ctx.beginPath();
 
             ctx.arc(
                 0,
                 0,
-                p.size,
+                particle.size,
                 0,
                 Math.PI * 2
             );
 
+
             ctx.fillStyle =
-                `rgba(255,22,9,${p.opacity})`;
+                `rgba(
+                    255,
+                    22,
+                    9,
+                    ${particle.opacity}
+                )`;
+
 
             ctx.fill();
 
             ctx.restore();
 
+
             return true;
         });
     }
 
-    function animate(time) {
 
-        if (startTime === null) {
-            startTime = time;
+    /* =====================================================
+       MAIN ANIMATION LOOP
+       ===================================================== */
+
+    function animate(timestamp) {
+
+        if (
+            startTime ===
+            null
+        ) {
+
+            startTime =
+                timestamp;
         }
 
+
         const elapsed =
-            time - startTime;
+            timestamp -
+            startTime;
+
+
+        /*
+           Clear previous frame.
+        */
 
         ctx.clearRect(
             0,
             0,
-            innerWidth,
-            innerHeight
+            window.innerWidth,
+            window.innerHeight
         );
 
+
+        /* =============================================
+           CREATE PARTICLES
+           ============================================= */
+
         if (
-            elapsed >= TRAIL_START &&
-            elapsed <= DURATION &&
-            particles.length < MAX_PARTICLES
+            elapsed >=
+            TRAIL_START &&
+
+            elapsed <=
+            DURATION &&
+
+            particles.length <
+            MAX_PARTICLES
         ) {
-            addParticle();
+
+            const edgeY =
+                getLoaderEdge();
+
+
+            /*
+               One particle per frame.
+
+               This keeps the trail sparse.
+            */
+
+            createParticle(
+                edgeY
+            );
         }
 
-        update();
 
-        requestAnimationFrame(animate);
+        /* =============================================
+           UPDATE + DRAW
+           ============================================= */
+
+        updateParticles();
+
+
+        requestAnimationFrame(
+            animate
+        );
     }
 
-    resize();
 
-    addEventListener(
+    /* =====================================================
+       START
+       ===================================================== */
+
+    resizeCanvas();
+
+
+    window.addEventListener(
         "resize",
-        resize
+        resizeCanvas
     );
 
-    requestAnimationFrame(animate);
+
+    requestAnimationFrame(
+        animate
+    );
 }
