@@ -167,11 +167,11 @@ main {
 }
 
   /* -------------------------
-       Vacancy
+       VACANCY
        ------------------------- */
 
     .vacancy {
-        margin-top: 35px;
+        margin-top: 12px;
         display: flex;
        justify-content: center; 
        align-items: center;         
