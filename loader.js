@@ -1,14 +1,11 @@
 /* =========================================================
    PAGE LOADER + PARTICLE TRAIL
-   Based on the working loader-edge version
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
 
 if (!loader) {
-
     console.warn("No .page-loader found.");
-
 } else {
 
     const canvas = document.createElement("canvas");
@@ -30,10 +27,8 @@ if (!loader) {
        ===================================================== */
 
     const DURATION = 2000;
-    const TRAIL_START = 1300;
-
-    const MAX_PARTICLES = 26;
-
+    const TRAIL_START = 1250;
+    const MAX_PARTICLES = 30;
 
     let particles = [];
     let startTime = null;
@@ -105,35 +100,35 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
+        let size;
+
         const random =
             Math.random();
 
-        let size;
-
 
         /*
-           Smaller particles overall.
+           Smaller particles than the original.
         */
 
-        if (random < 0.50) {
+        if (random < 0.45) {
 
             size =
-                Math.random() * 2.5 + 2.5;
+                Math.random() * 2 + 3;
 
-        } else if (random < 0.82) {
-
-            size =
-                Math.random() * 3 + 4;
-
-        } else if (random < 0.96) {
+        } else if (random < 0.80) {
 
             size =
-                Math.random() * 4 + 7;
+                Math.random() * 3 + 5;
+
+        } else if (random < 0.95) {
+
+            size =
+                Math.random() * 4 + 8;
 
         } else {
 
             size =
-                Math.random() * 5 + 10;
+                Math.random() * 5 + 12;
         }
 
 
@@ -149,43 +144,46 @@ if (!loader) {
                 edgeY,
 
 
-            /* =================================================
-               MOVEMENT
-               ================================================= */
+            /* Movement */
 
-            velocityX: 0,
+            velocityX:
+                0,
 
             velocityY:
-                4.5 +
-                Math.random() * 2.5,
+                5 +
+                Math.random() * 3,
 
 
             /*
-               Very small sideways movement.
-
-               This is intentionally much lower than before.
+               VERY subtle horizontal destination.
             */
 
             targetX:
-                (Math.random() - 0.5) * 0.45,
+                (Math.random() - 0.5) * 0.35,
 
+
+            /*
+               Very subtle curve.
+            */
 
             curve:
-                (Math.random() - 0.5) * 0.008,
+                (Math.random() - 0.5) * 0.006,
 
+
+            /*
+               Slow natural deceleration.
+            */
 
             friction:
-                0.975,
+                0.985,
 
 
             gravity:
-                0.012 +
+                0.015 +
                 Math.random() * 0.01,
 
 
-            /* =================================================
-               TIMING
-               ================================================= */
+            /* Timing */
 
             phase:
                 "stretch",
@@ -193,31 +191,23 @@ if (!loader) {
             phaseTime:
                 0,
 
-
             stretchTime:
-                6 +
-                Math.random() * 4,
-
+                Math.random() * 5 + 6,
 
             trailTime:
-                45 +
-                Math.random() * 20,
-
+                Math.random() * 18 + 35,
 
             popTime:
-                9,
+                8,
 
 
-            /* =================================================
-               SHAPE
-               ================================================= */
+            /* Shape */
 
             scaleX:
                 0.55,
 
             scaleY:
                 1,
-
 
             opacity:
                 1
@@ -252,9 +242,10 @@ if (!loader) {
             /* =================================================
                STRETCH
 
-               Particle is still attached to the red edge.
+               Still attached to the red line.
 
-               It moves ONLY vertically here.
+               X stays locked.
+               Y continues naturally.
                ================================================= */
 
             if (
@@ -275,7 +266,7 @@ if (!loader) {
 
 
                 /*
-                   Keep X completely locked.
+                   No horizontal movement while attached.
                 */
 
                 particle.velocityX =
@@ -283,9 +274,7 @@ if (!loader) {
 
 
                 /*
-                   Continuous vertical movement.
-
-                   No velocity reset.
+                   Continue moving downward.
                 */
 
                 particle.y +=
@@ -293,7 +282,7 @@ if (!loader) {
 
 
                 /*
-                   Gravity continues naturally.
+                   Gravity remains continuous.
                 */
 
                 particle.velocityY +=
@@ -301,9 +290,7 @@ if (!loader) {
 
 
                 /*
-                   SUBTLE vertical stretch.
-
-                   Much less exaggerated than before.
+                   Subtle vertical stretch.
                 */
 
                 particle.scaleX =
@@ -316,7 +303,7 @@ if (!loader) {
                 particle.scaleY =
                     1 +
                     (
-                        1.7 *
+                        1.8 *
                         eased
                     );
 
@@ -342,12 +329,10 @@ if (!loader) {
             /* =================================================
                TRAIL
 
-               This is the important part:
+               Continuous motion.
 
-               The particle NEVER stops.
-
-               It gradually loses momentum while continuing
-               to drift until it reaches the pop.
+               No stopping.
+               No velocity reset.
                ================================================= */
 
             else if (
@@ -356,17 +341,14 @@ if (!loader) {
             ) {
 
                 /*
-                   Slowly introduce sideways movement.
-
-                   This prevents the sudden horizontal jump
-                   that caused the previous mechanical motion.
+                   Slowly introduce tiny X movement.
                 */
 
                 particle.velocityX +=
                     (
                         particle.targetX -
                         particle.velocityX
-                    ) * 0.035;
+                    ) * 0.025;
 
 
                 /*
@@ -378,7 +360,7 @@ if (!loader) {
 
 
                 /*
-                   CONTINUOUS movement.
+                   Move using the SAME velocity.
                 */
 
                 particle.x +=
@@ -389,10 +371,7 @@ if (!loader) {
 
 
                 /*
-                   Gradually slow the particle.
-
-                   It keeps moving because gravity continues
-                   acting on the Y velocity.
+                   Gradually slow down.
                 */
 
                 particle.velocityX *=
@@ -402,12 +381,16 @@ if (!loader) {
                     particle.friction;
 
 
+                /*
+                   Gravity keeps the particle moving.
+                */
+
                 particle.velocityY +=
                     particle.gravity;
 
 
                 /*
-                   Return smoothly from stretched shape.
+                   Smoothly return to round.
                 */
 
                 const roundProgress =
@@ -425,26 +408,18 @@ if (!loader) {
                     1;
 
                 particle.scaleY =
-                    2.7 -
+                    2.8 -
                     (
-                        1.7 *
+                        1.8 *
                         round
                     );
 
 
                 /*
+                   Move to the pop.
+
                    IMPORTANT:
-
-                   No velocity is ever set to zero.
-
-                   Even if momentum gets very small,
-                   gravity keeps the particle drifting.
-                */
-
-
-                /*
-                   Move to pop once its trail has naturally
-                   run long enough.
+                   We do NOT zero either velocity.
                 */
 
                 if (
@@ -464,7 +439,7 @@ if (!loader) {
             /* =================================================
                POP
 
-               Particle keeps moving while disappearing.
+               Movement continues while the particle shrinks.
                ================================================= */
 
             else if (
@@ -473,7 +448,7 @@ if (!loader) {
             ) {
 
                 /*
-                   Continue the exact same motion.
+                   KEEP MOVING.
                 */
 
                 particle.x +=
@@ -484,14 +459,15 @@ if (!loader) {
 
 
                 /*
-                   Continue slowing while it pops.
+                   Continue slowing naturally.
                 */
 
                 particle.velocityX *=
-                    0.97;
+                    0.98;
 
                 particle.velocityY *=
-                    0.97;
+                    0.98;
+
 
                 particle.velocityY +=
                     particle.gravity;
@@ -544,6 +520,10 @@ if (!loader) {
                 particle.y
             );
 
+
+            /*
+               Vertical stretch only.
+            */
 
             ctx.scale(
                 particle.scaleX,
@@ -610,8 +590,8 @@ if (!loader) {
 
 
         /*
-           Create particles from the ACTUAL moving edge
-           of the red loader.
+           Particles originate from the actual moving
+           top edge of the red loader.
         */
 
         if (
@@ -641,12 +621,10 @@ if (!loader) {
 
     resizeCanvas();
 
-
     window.addEventListener(
         "resize",
         resizeCanvas
     );
-
 
     requestAnimationFrame(
         animate
