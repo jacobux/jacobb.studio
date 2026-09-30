@@ -60,8 +60,11 @@ if (!loader) {
 
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
+        canvas.width =
+            window.innerWidth * dpr;
+
+        canvas.height =
+            window.innerHeight * dpr;
 
         canvas.style.width =
             window.innerWidth + "px";
@@ -162,9 +165,10 @@ if (!loader) {
             /* Size */
 
             size:
+                size,
 
 
-                /* Movement */
+            /* Movement */
 
             velocityX:
                 (Math.random() - 0.5) * 2.5,
@@ -201,10 +205,10 @@ if (!loader) {
 
 
             /*
-               VERY SHORT stretch phase.
+               Very short stretch.
 
-               The particle stays almost completely
-               stationary during this period.
+               The particle does NOT move during
+               this phase.
             */
 
             stretchTime:
@@ -212,10 +216,10 @@ if (!loader) {
 
 
             /*
-               Short release phase.
+               Short release.
 
-               The particle returns to a circle
-               before travelling.
+               The particle becomes round before
+               it starts moving.
             */
 
             releaseTime:
@@ -223,7 +227,7 @@ if (!loader) {
 
 
             /*
-               How long it travels before settling.
+               Travel duration.
             */
 
             travelTime:
@@ -231,7 +235,7 @@ if (!loader) {
 
 
             /*
-               Short settling transition.
+               Short settling phase.
             */
 
             settleTime:
@@ -239,7 +243,7 @@ if (!loader) {
 
 
             /*
-               Time spent sitting as a circle.
+               Time spent lingering.
             */
 
             lingerTime:
@@ -247,7 +251,7 @@ if (!loader) {
 
 
             /*
-               Final pop.
+               Final pop duration.
             */
 
             popTime:
@@ -307,25 +311,15 @@ if (!loader) {
 
 
                 /*
-                   IMPORTANT:
+                   NO MOVEMENT HERE.
 
-                   No movement happens here.
-
-                   The particle remains attached to
-                   the red edge while stretching.
+                   The particle stays attached to the
+                   red edge while it stretches vertically.
                 */
 
                 particle.scaleX =
                     0.35;
 
-                particle.scaleY =
-                    3.8;
-
-
-                /*
-                   Very slight compression toward
-                   the final shape near the end.
-                */
 
                 const progress =
                     Math.min(
@@ -334,8 +328,15 @@ if (!loader) {
                         particle.stretchTime
                     );
 
+
                 const eased =
                     easeOut(progress);
+
+
+                /*
+                   Start very stretched, then slightly
+                   relax before release.
+                */
 
                 particle.scaleY =
                     3.8 -
@@ -343,8 +344,7 @@ if (!loader) {
 
 
                 /*
-                   Once the short stretch is complete,
-                   begin releasing the particle.
+                   Move to release phase.
                 */
 
                 if (
@@ -362,7 +362,7 @@ if (!loader) {
 
 
             /* =============================================
-               PHASE 2 — RELEASE / BECOME ROUND
+               PHASE 2 — RELEASE
                ============================================= */
 
             else if (
@@ -374,10 +374,10 @@ if (!loader) {
 
 
                 /*
-                   Still barely moving.
+                   Still stationary.
 
-                   The particle becomes round BEFORE
-                   it begins travelling.
+                   The stretched shape contracts toward
+                   a normal circle.
                 */
 
                 const progress =
@@ -386,6 +386,7 @@ if (!loader) {
                         particle.phaseTime /
                         particle.releaseTime
                     );
+
 
                 const eased =
                     easeOut(progress);
@@ -402,8 +403,8 @@ if (!loader) {
 
 
                 /*
-                   Begin movement only after
-                   the stretch has finished.
+                   Only after the release finishes does
+                   the particle begin travelling.
                 */
 
                 if (
@@ -439,9 +440,9 @@ if (!loader) {
 
 
                 /*
-                   NOW the particle starts moving.
+                   NOW movement begins.
 
-                   It has already become round.
+                   The particle is already round.
                 */
 
                 particle.velocityX +=
@@ -478,7 +479,7 @@ if (!loader) {
 
 
                 /*
-                   Keep particle round.
+                   Keep particle perfectly round.
                 */
 
                 particle.scaleX =
@@ -489,8 +490,7 @@ if (!loader) {
 
 
                 /*
-                   Eventually transition
-                   into the settling phase.
+                   Transition to settling.
                 */
 
                 if (
@@ -520,8 +520,7 @@ if (!loader) {
 
 
                 /*
-                   Continue the existing momentum,
-                   but quickly slow down.
+                   Continue momentum while slowing.
                 */
 
                 particle.x +=
@@ -543,7 +542,7 @@ if (!loader) {
 
 
                 /*
-                   Keep it round.
+                   Keep round.
                 */
 
                 particle.scaleX =
@@ -554,7 +553,7 @@ if (!loader) {
 
 
                 /*
-                   Stop moving once settled.
+                   Stop completely.
                 */
 
                 if (
@@ -590,7 +589,7 @@ if (!loader) {
 
 
                 /*
-                   Completely round and stationary.
+                   Completely stationary circle.
                 */
 
                 particle.scaleX =
@@ -601,7 +600,7 @@ if (!loader) {
 
 
                 /*
-                   Then pop.
+                   Begin pop.
                 */
 
                 if (
@@ -639,7 +638,7 @@ if (!loader) {
 
 
                 /*
-                   Rapidly shrink.
+                   Rapid shrink.
                 */
 
                 const pop =
@@ -655,7 +654,7 @@ if (!loader) {
 
 
                 /*
-                   Fade near the end.
+                   Fade toward the end.
                 */
 
                 if (
@@ -703,12 +702,10 @@ if (!loader) {
 
 
             /*
-               IMPORTANT:
+               No rotation.
 
-               There is NO rotation.
-
-               This keeps the stretch perfectly
-               vertical on the screen.
+               Stretch therefore remains perfectly
+               vertical relative to the screen.
             */
 
             ctx.scale(
@@ -718,6 +715,7 @@ if (!loader) {
 
 
             ctx.beginPath();
+
 
             ctx.arc(
                 0,
@@ -738,6 +736,7 @@ if (!loader) {
 
 
             ctx.fill();
+
 
             ctx.restore();
 
@@ -801,8 +800,6 @@ if (!loader) {
 
             /*
                One particle per frame.
-
-               This keeps the trail sparse.
             */
 
             createParticle(
