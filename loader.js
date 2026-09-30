@@ -730,3 +730,38 @@ if (window.matchMedia("(pointer: fine)").matches) {
     });
 
 }
+
+/* =========================================================
+   PAGE EXIT
+   ========================================================= */
+
+document.querySelectorAll("a").forEach(function (link) {
+
+    link.addEventListener("click", function (event) {
+
+        const href = link.getAttribute("href");
+
+        /* Ignore external / special links */
+        if (
+            !href ||
+            href.startsWith("#") ||
+            href.startsWith("mailto:") ||
+            link.target === "_blank" ||
+            href.startsWith("http")
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        document.body.classList.add("page-exiting");
+
+        setTimeout(function () {
+
+            window.location.href = href;
+
+        }, 350);
+
+    });
+
+});
