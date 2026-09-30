@@ -34,12 +34,13 @@ if (!loader) {
 
     const TRAIL_START = 1300;
 
-    /*
-     * Fewer, more substantial particles.
-     */
-    const PARTICLES_PER_FRAME = 3;
 
-    const MAX_PARTICLES = 180;
+    /*
+     * FEWER PARTICLES
+     */
+    const PARTICLES_PER_FRAME = 2;
+
+    const MAX_PARTICLES = 120;
 
 
     let particles = [];
@@ -97,39 +98,52 @@ if (!loader) {
            --------------------------------------------- */
 
         /*
-         * Mostly medium/large particles,
-         * with occasional large chunks.
+         * Mostly medium particles.
+         *
+         * Occasionally create a VERY large
+         * chunk to make the effect irregular.
          */
+
         let size;
 
         const randomSize =
             Math.random();
 
-        if (randomSize < 0.65) {
+        if (randomSize < 0.55) {
 
+            /*
+             * Small/medium
+             */
             size =
                 Math.random() * 4 + 3;
 
-        } else if (randomSize < 0.9) {
+        } else if (randomSize < 0.85) {
 
+            /*
+             * Medium/large
+             */
             size =
-                Math.random() * 6 + 5;
+                Math.random() * 7 + 6;
 
         } else {
 
+            /*
+             * BIG CHUNK
+             */
             size =
-                Math.random() * 9 + 8;
+                Math.random() * 12 + 10;
         }
 
 
         /* ---------------------------------------------
-           PARTICLE
+           CREATE
            --------------------------------------------- */
 
         particles.push({
 
             /*
-             * Start directly on the red edge.
+             * Start directly against
+             * the moving red edge.
              */
             x:
                 Math.random() *
@@ -138,56 +152,85 @@ if (!loader) {
             y:
                 edgeY,
 
-            /*
-             * Base size.
-             */
+
+            /* -----------------------------------------
+               SIZE
+               ----------------------------------------- */
+
             size:
                 size,
 
             originalSize:
                 size,
 
+
+            /* -----------------------------------------
+               INITIAL MOMENTUM
+               ----------------------------------------- */
+
             /*
-             * Small sideways movement.
+             * Strong downward velocity inherited
+             * from the moving red loader.
+             */
+            velocityY:
+                Math.random() * 4 + 5,
+
+            /*
+             * Very small horizontal movement.
              */
             velocityX:
                 (Math.random() - 0.5) * 2,
 
-            /*
-             * Strong downward impulse.
-             */
-            velocityY:
-                Math.random() * 3.5 + 4,
+
+            /* -----------------------------------------
+               PHYSICS
+               ----------------------------------------- */
 
             /*
-             * Gradual loss of momentum.
+             * Strong drag means the particle
+             * rapidly loses its initial velocity.
+             */
+            drag:
+                0.84,
+
+
+            /*
+             * Tiny amount of gravity after
+             * the initial momentum is gone.
              */
             gravity:
-                Math.random() * 0.04 + 0.015,
+                Math.random() * 0.025 + 0.01,
+
+
+            /* -----------------------------------------
+               LIFETIME
+               ----------------------------------------- */
 
             /*
-             * How quickly the particle
-             * contracts.
-             */
-            shrink:
-                Math.random() * 0.16 + 0.10,
-
-            /*
-             * Short lifetime.
+             * Longer linger time.
              */
             life:
-                Math.random() * 12 + 12,
+                Math.random() * 18 + 22,
+
+            maxLife:
+                1,
+
+
+            /* -----------------------------------------
+               APPEARANCE
+               ----------------------------------------- */
 
             /*
-             * Start completely solid.
+             * Completely solid at birth.
              */
-            opacity: 1
+            opacity:
+                1
         });
     }
 
 
     /* =====================================================
-       GET MOVING EDGE
+       GET MOVING RED EDGE
        ===================================================== */
 
     function getLoaderEdge() {
@@ -195,10 +238,6 @@ if (!loader) {
         const rect =
             loader.getBoundingClientRect();
 
-        /*
-         * TOP edge is the edge moving
-         * downward across the page.
-         */
         return rect.top;
     }
 
@@ -212,8 +251,9 @@ if (!loader) {
         particles = particles.filter(
             particle => {
 
+
                 /* -----------------------------------------
-                   MOVEMENT
+                   INITIAL MOMENTUM
                    ----------------------------------------- */
 
                 particle.x +=
@@ -224,39 +264,68 @@ if (!loader) {
 
 
                 /*
-                 * Gravity / momentum.
+                 * Strong drag.
+                 *
+                 * This makes the particle move quickly
+                 * at first, then slow dramatically.
+                 */
+                particle.velocityY *=
+                    particle.drag;
+
+
+                /*
+                 * Horizontal movement also slows.
+                 */
+                particle.velocityX *=
+                    0.96;
+
+
+                /*
+                 * Tiny gravitational pull.
                  */
                 particle.velocityY +=
                     particle.gravity;
 
 
-                /*
-                 * Slight horizontal drag.
-                 */
-                particle.velocityX *=
-                    0.99;
-
-
                 /* -----------------------------------------
-                   SHRINK
-                   ----------------------------------------- */
-
-                particle.size -=
-                    particle.shrink;
-
-
-                /* -----------------------------------------
-                   FINAL FADE
+                   LIFE
                    ----------------------------------------- */
 
                 particle.life -= 1;
 
+
+                /* -----------------------------------------
+                   POP / SHRINK
+                   ----------------------------------------- */
+
+                /*
+                 * For most of its life the particle
+                 * remains full-sized and solid.
+                 *
+                 * Near the end it rapidly shrinks.
+                 */
+
+                const lifeRatio =
+                    particle.life /
+                    (particle.maxLife + 39);
+
+
                 if (
-                    particle.life < 3
+                    particle.life < 7
                 ) {
 
+                    /*
+                     * Very fast final shrink.
+                     */
+                    particle.size *=
+                        0.72;
+
+
+                    /*
+                     * Almost instant final fade.
+                     */
                     particle.opacity =
-                        particle.life / 3;
+                        particle.life / 7;
                 }
 
 
@@ -265,8 +334,9 @@ if (!loader) {
                    ----------------------------------------- */
 
                 if (
-                    particle.size <= 0 ||
-                    particle.life <= 0
+                    particle.size <= 0.5 ||
+                    particle.life <= 0 ||
+                    particle.opacity <= 0
                 ) {
                     return false;
                 }
@@ -278,16 +348,27 @@ if (!loader) {
 
                 ctx.beginPath();
 
+
                 /*
-                 * Slight vertical stretching while
-                 * the particle is moving quickly.
+                 * Stretch particles when they're
+                 * moving quickly.
+                 *
+                 * As they slow down they become
+                 * round again.
                  */
+
+                const speed =
+                    Math.abs(
+                        particle.velocityY
+                    );
+
                 const stretch =
                     Math.min(
-                        1.8,
+                        2.2,
                         1 +
-                        particle.velocityY * 0.08
+                        speed * 0.12
                     );
+
 
                 ctx.ellipse(
                     particle.x,
@@ -299,6 +380,10 @@ if (!loader) {
                     Math.PI * 2
                 );
 
+
+                /*
+                 * Solid #FF1609.
+                 */
                 ctx.fillStyle =
                     `rgba(
                         255,
@@ -342,7 +427,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           EMIT
+           EMIT PARTICLES
            --------------------------------------------- */
 
         if (
