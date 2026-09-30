@@ -230,13 +230,13 @@ if (!loader) {
                     Math.PI * 2
                 );
 
-                ctx.fillStyle =
-                    `rgba(
-                        255,
-                        255,
-                        255,
-                        ${particle.opacity}
-                    )`;
+             ctx.fillStyle =
+    `rgba(
+        255,
+        22,
+        9,
+        ${particle.opacity}
+    )`;
 
                 ctx.fill();
 
