@@ -8,10 +8,6 @@ if (!loader) {
     console.warn("No .page-loader found.");
 } else {
 
-    /* =====================================================
-       CANVAS
-       ===================================================== */
-
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -31,29 +27,16 @@ if (!loader) {
        ===================================================== */
 
     const DURATION = 2000;
-
-    /*
-       Particles begin appearing when the red loader
-       starts sliding downward.
-    */
     const TRAIL_START = 1250;
-
-    /*
-       Maximum number of particles alive at once.
-    */
     const MAX_PARTICLES = 30;
 
-
-    /* =====================================================
-       STATE
-       ===================================================== */
 
     let particles = [];
     let startTime = null;
 
 
     /* =====================================================
-       CANVAS RESIZE
+       CANVAS
        ===================================================== */
 
     function resizeCanvas() {
@@ -88,25 +71,13 @@ if (!loader) {
        ===================================================== */
 
     function easeOut(t) {
-
-        return 1 - Math.pow(
-            1 - t,
-            3
-        );
+        return 1 - Math.pow(1 - t, 3);
     }
 
-
     function easeInOut(t) {
-
         return t < 0.5
-
             ? 4 * t * t * t
-
-            : 1 -
-              Math.pow(
-                  -2 * t + 2,
-                  3
-              ) / 2;
+            : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
 
@@ -116,17 +87,9 @@ if (!loader) {
 
     function createParticle(edgeY) {
 
-        /*
-           Random particle size.
-
-           Most particles are small,
-           with occasional larger pieces.
-        */
-
         let size;
 
-        const random =
-            Math.random();
+        const random = Math.random();
 
         if (random < 0.45) {
 
@@ -152,17 +115,12 @@ if (!loader) {
 
         particles.push({
 
-            /* Position */
-
             x:
                 Math.random() *
                 window.innerWidth,
 
             y:
                 edgeY,
-
-
-            /* Size */
 
             size:
                 size,
@@ -198,61 +156,16 @@ if (!loader) {
             /* Animation */
 
             phase:
-                "stretch",
+                "travel",
 
             phaseTime:
                 0,
 
-
-            /*
-               Very short stretch.
-
-               The particle does NOT move during
-               this phase.
-            */
-
-            stretchTime:
-                Math.random() * 3 + 3,
-
-
-            /*
-               Short release.
-
-               The particle becomes round before
-               it starts moving.
-            */
-
-            releaseTime:
-                Math.random() * 4 + 4,
-
-
-            /*
-               Travel duration.
-            */
-
             travelTime:
                 Math.random() * 12 + 15,
 
-
-            /*
-               Short settling phase.
-            */
-
-            settleTime:
-                Math.random() * 6 + 6,
-
-
-            /*
-               Time spent lingering.
-            */
-
             lingerTime:
                 Math.random() * 18 + 28,
-
-
-            /*
-               Final pop duration.
-            */
 
             popTime:
                 7,
@@ -261,13 +174,11 @@ if (!loader) {
             /* Shape */
 
             scaleX:
-                0.35,
+                0.45,
 
             scaleY:
-                3.8,
+                2.5,
 
-
-            /* Opacity */
 
             opacity:
                 1
@@ -276,15 +187,12 @@ if (!loader) {
 
 
     /* =====================================================
-       GET RED LOADER EDGE
+       LOADER EDGE
        ===================================================== */
 
     function getLoaderEdge() {
 
-        const rect =
-            loader.getBoundingClientRect();
-
-        return rect.top;
+        return loader.getBoundingClientRect().top;
     }
 
 
@@ -297,152 +205,23 @@ if (!loader) {
         particles =
             particles.filter(function (particle) {
 
+            particle.phaseTime++;
+
 
             /* =============================================
-               PHASE 1 — STRETCH
+               MOVEMENT + STRETCH
                ============================================= */
 
             if (
                 particle.phase ===
-                "stretch"
-            ) {
-
-                particle.phaseTime++;
-
-
-                /*
-                   NO MOVEMENT HERE.
-
-                   The particle stays attached to the
-                   red edge while it stretches vertically.
-                */
-
-                particle.scaleX =
-                    0.35;
-
-
-                const progress =
-                    Math.min(
-                        1,
-                        particle.phaseTime /
-                        particle.stretchTime
-                    );
-
-
-                const eased =
-                    easeOut(progress);
-
-
-                /*
-                   Start very stretched, then slightly
-                   relax before release.
-                */
-
-                particle.scaleY =
-                    3.8 -
-                    (0.8 * eased);
-
-
-                /*
-                   Move to release phase.
-                */
-
-                if (
-                    particle.phaseTime >=
-                    particle.stretchTime
-                ) {
-
-                    particle.phase =
-                        "release";
-
-                    particle.phaseTime =
-                        0;
-                }
-            }
-
-
-            /* =============================================
-               PHASE 2 — RELEASE
-               ============================================= */
-
-            else if (
-                particle.phase ===
-                "release"
-            ) {
-
-                particle.phaseTime++;
-
-
-                /*
-                   Still stationary.
-
-                   The stretched shape contracts toward
-                   a normal circle.
-                */
-
-                const progress =
-                    Math.min(
-                        1,
-                        particle.phaseTime /
-                        particle.releaseTime
-                    );
-
-
-                const eased =
-                    easeOut(progress);
-
-
-                particle.scaleY =
-                    3 -
-                    (2 * eased);
-
-
-                particle.scaleX =
-                    0.35 +
-                    (0.65 * eased);
-
-
-                /*
-                   Only after the release finishes does
-                   the particle begin travelling.
-                */
-
-                if (
-                    particle.phaseTime >=
-                    particle.releaseTime
-                ) {
-
-                    particle.phase =
-                        "travel";
-
-                    particle.phaseTime =
-                        0;
-
-                    particle.scaleX =
-                        1;
-
-                    particle.scaleY =
-                        1;
-                }
-            }
-
-
-            /* =============================================
-               PHASE 3 — TRAVEL
-               ============================================= */
-
-            else if (
-                particle.phase ===
                 "travel"
             ) {
 
-                particle.phaseTime++;
-
-
                 /*
-                   NOW movement begins.
+                   The particle moves immediately.
 
-                   The particle is already round.
+                   This is intentionally NOT separated
+                   into a stationary stretch phase.
                 */
 
                 particle.velocityX +=
@@ -459,9 +238,7 @@ if (!loader) {
                     particle.velocityY;
 
 
-                /*
-                   Inertia.
-                */
+                /* Inertia */
 
                 particle.velocityX *=
                     particle.friction;
@@ -470,95 +247,66 @@ if (!loader) {
                     particle.friction;
 
 
-                /*
-                   Gravity.
-                */
+                /* Gravity */
 
                 particle.velocityY +=
                     particle.gravity;
 
 
                 /*
-                   Keep particle perfectly round.
+                   Calculate movement speed.
+
+                   This controls how stretched the
+                   particle appears.
                 */
 
-                particle.scaleX =
-                    1;
+                const speed =
+                    Math.sqrt(
+                        particle.velocityX *
+                        particle.velocityX +
 
-                particle.scaleY =
-                    1;
+                        particle.velocityY *
+                        particle.velocityY
+                    );
 
 
                 /*
-                   Transition to settling.
+                   STRETCH
+
+                   The particle starts elongated and
+                   naturally becomes round as its motion
+                   settles.
+
+                   It is ALWAYS vertically aligned.
+                */
+
+                const stretch =
+                    Math.min(
+                        4.5,
+                        1 + speed * 0.42
+                    );
+
+
+                particle.scaleY =
+                    stretch;
+
+
+                particle.scaleX =
+                    Math.max(
+                        0.32,
+                        1 - speed * 0.055
+                    );
+
+
+                /*
+                   After the initial burst of movement,
+                   smoothly transition into the lingering
+                   phase.
                 */
 
                 if (
                     particle.phaseTime >=
                     particle.travelTime
-                ) {
-
-                    particle.phase =
-                        "settle";
-
-                    particle.phaseTime =
-                        0;
-                }
-            }
-
-
-            /* =============================================
-               PHASE 4 — SETTLE
-               ============================================= */
-
-            else if (
-                particle.phase ===
-                "settle"
-            ) {
-
-                particle.phaseTime++;
-
-
-                /*
-                   Continue momentum while slowing.
-                */
-
-                particle.x +=
-                    particle.velocityX;
-
-                particle.y +=
-                    particle.velocityY;
-
-
-                particle.velocityX *=
-                    0.88;
-
-                particle.velocityY *=
-                    0.88;
-
-
-                particle.velocityY +=
-                    particle.gravity * 0.35;
-
-
-                /*
-                   Keep round.
-                */
-
-                particle.scaleX =
-                    1;
-
-                particle.scaleY =
-                    1;
-
-
-                /*
-                   Stop completely.
-                */
-
-                if (
-                    particle.phaseTime >=
-                    particle.settleTime
                 ) {
 
                     particle.phase =
@@ -572,12 +320,18 @@ if (!loader) {
 
                     particle.velocityY =
                         0;
+
+                    particle.scaleX =
+                        1;
+
+                    particle.scaleY =
+                        1;
                 }
             }
 
 
             /* =============================================
-               PHASE 5 — LINGER
+               LINGER
                ============================================= */
 
             else if (
@@ -585,23 +339,12 @@ if (!loader) {
                 "linger"
             ) {
 
-                particle.phaseTime++;
-
-
-                /*
-                   Completely stationary circle.
-                */
-
                 particle.scaleX =
                     1;
 
                 particle.scaleY =
                     1;
 
-
-                /*
-                   Begin pop.
-                */
 
                 if (
                     particle.phaseTime >=
@@ -618,16 +361,13 @@ if (!loader) {
 
 
             /* =============================================
-               PHASE 6 — POP
+               POP
                ============================================= */
 
             else if (
                 particle.phase ===
                 "pop"
             ) {
-
-                particle.phaseTime++;
-
 
                 const progress =
                     Math.min(
@@ -636,10 +376,6 @@ if (!loader) {
                         particle.popTime
                     );
 
-
-                /*
-                   Rapid shrink.
-                */
 
                 const pop =
                     1 -
@@ -652,10 +388,6 @@ if (!loader) {
                 particle.scaleY =
                     pop;
 
-
-                /*
-                   Fade toward the end.
-                */
 
                 if (
                     progress >
@@ -674,10 +406,6 @@ if (!loader) {
                 }
 
 
-                /*
-                   Remove particle.
-                */
-
                 if (
                     particle.phaseTime >=
                     particle.popTime
@@ -694,7 +422,6 @@ if (!loader) {
 
             ctx.save();
 
-
             ctx.translate(
                 particle.x,
                 particle.y
@@ -702,10 +429,13 @@ if (!loader) {
 
 
             /*
+               IMPORTANT:
+
                No rotation.
 
-               Stretch therefore remains perfectly
-               vertical relative to the screen.
+               The particle's movement can curve,
+               but its stretched shape stays vertically
+               aligned with the screen.
             */
 
             ctx.scale(
@@ -715,7 +445,6 @@ if (!loader) {
 
 
             ctx.beginPath();
-
 
             ctx.arc(
                 0,
@@ -737,7 +466,6 @@ if (!loader) {
 
             ctx.fill();
 
-
             ctx.restore();
 
 
@@ -747,18 +475,13 @@ if (!loader) {
 
 
     /* =====================================================
-       MAIN ANIMATION LOOP
+       ANIMATION
        ===================================================== */
 
     function animate(timestamp) {
 
-        if (
-            startTime ===
-            null
-        ) {
-
-            startTime =
-                timestamp;
+        if (startTime === null) {
+            startTime = timestamp;
         }
 
 
@@ -766,10 +489,6 @@ if (!loader) {
             timestamp -
             startTime;
 
-
-        /*
-           Clear previous frame.
-        */
 
         ctx.clearRect(
             0,
@@ -779,38 +498,22 @@ if (!loader) {
         );
 
 
-        /* =============================================
-           CREATE PARTICLES
-           ============================================= */
+        /*
+           Create particles while the red loader
+           is sliding away.
+        */
 
         if (
-            elapsed >=
-            TRAIL_START &&
-
-            elapsed <=
-            DURATION &&
-
-            particles.length <
-            MAX_PARTICLES
+            elapsed >= TRAIL_START &&
+            elapsed <= DURATION &&
+            particles.length < MAX_PARTICLES
         ) {
 
-            const edgeY =
-                getLoaderEdge();
-
-
-            /*
-               One particle per frame.
-            */
-
             createParticle(
-                edgeY
+                getLoaderEdge()
             );
         }
 
-
-        /* =============================================
-           UPDATE + DRAW
-           ============================================= */
 
         updateParticles();
 
@@ -827,12 +530,10 @@ if (!loader) {
 
     resizeCanvas();
 
-
     window.addEventListener(
         "resize",
         resizeCanvas
     );
-
 
     requestAnimationFrame(
         animate
