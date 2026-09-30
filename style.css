@@ -302,7 +302,7 @@ main {
 @media (max-width: 450px) {
 
     main {
-        padding: 16px;
+       padding: 264px 16px 64px;
     }
 
 
@@ -360,45 +360,66 @@ main {
     }
 
 
-/* Hide page until the red screen has covered it */
+/* =========================================================
+   PAGE LOAD ANIMATION
+   ========================================================= */
+
 main {
     opacity: 0;
-    animation: pageAppear 1.8s forwards;
+    animation: pageAppear 2s forwards;
 }
+
+@keyframes pageAppear {
+    0%,
+    40% {
+        opacity: 0;
+    }
+
+    41%,
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   RED PAGE LOADER
+   ========================================================= */
 
 .page-loader {
     position: fixed;
     inset: 0;
+
     background: #FF1609;
+
     z-index: 9999;
     overflow: visible;
 
     transform-origin: top;
+
     animation: redReveal 2s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
- 
-   .loader-particle {
-    position: fixed;
-    background: #FF1609;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 10000;
-   }
 
 @keyframes redReveal {
+
+    /* Thin line at the top */
     0% {
         transform: scaleY(0.01);
     }
 
+    /* Grow until the entire screen is covered */
     40% {
         transform: scaleY(1);
     }
 
+    /* Hold while the page appears underneath */
     65% {
         transform: scaleY(1);
     }
 
+    /* Slide down and disappear */
     100% {
         transform: translateY(100%);
     }
+}
 }
