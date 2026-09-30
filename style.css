@@ -331,44 +331,53 @@ main {
 }
 
 
- .page-loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 4px;
-
-    background: #FF1609;
-
-    z-index: 9999;
-
-    animation: loaderSweep 1s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+/* Hide page until the red screen has covered it */
+main {
+    opacity: 0;
+    animation: pageAppear 1.8s forwards;
 }
 
-@keyframes loaderSweep {
+/* Red loading screen */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    background: #FF1609;
+    z-index: 9999;
 
+    transform-origin: top;
+    animation: redReveal 1.8s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+/* Page appears underneath the red */
+@keyframes pageAppear {
+    0%, 40% {
+        opacity: 0;
+    }
+
+    41%, 100% {
+        opacity: 1;
+    }
+}
+
+/* Red animation */
+@keyframes redReveal {
+    /* Start as a thin line */
     0% {
-        height: 4px;
+        transform: scaleY(0.01);
     }
 
-    25% {
-        height: 25px;
+    /* Grow downward until entire screen is covered */
+    40% {
+        transform: scaleY(1);
     }
 
-    45% {
-        height: 100vh;
+    /* Hold while page finishes appearing underneath */
+    65% {
+        transform: scaleY(1);
     }
 
-    60% {
-        height: 100vh;
-    }
-
-    85% {
-        height: 25px;
-    }
-
+    /* Slide completely off the bottom */
     100% {
-        height: 0;
+        transform: translateY(100%);
     }
 }
