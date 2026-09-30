@@ -1,63 +1,85 @@
 const loader = document.querySelector(".page-loader");
 
-let particles = [];
-let lastTime = 0;
+if (!loader) {
+    console.warn("Page loader not found.");
+} else {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-function createParticle() {
-    const rect = loader.getBoundingClientRect();
+    canvas.style.position = "fixed";
+    canvas.style.inset = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "10000";
 
-    particles.push({
-        x: Math.random() * window.innerWidth,
-        y: rect.bottom,
-        size: Math.random() * 3 + 1,
-        speedX: (Math.random() - 0.5) * 1.5,
-        speedY: Math.random() * 1.5 + 0.5,
-        life: 1,
-        decay: Math.random() * 0.025 + 0.015
-    });
-}
+    document.body.appendChild(canvas);
 
-function animate(time) {
-    const delta = time - lastTime;
-    lastTime = time;
+    let particles = [];
 
-    // Only create particles while the red panel is moving
-    const rect = loader.getBoundingClientRect();
-
-    if (rect.bottom > 0 && rect.bottom < window.innerHeight) {
-        for (let i = 0; i < 3; i++) {
-            createParticle();
-        }
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
 
-    particles.forEach((particle, index) => {
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-        particle.life -= particle.decay;
+    function createParticle() {
+        const rect = loader.getBoundingClientRect();
 
-        if (particle.life <= 0) {
-            particles.splice(index, 1);
-            return;
+        particles.push({
+            x: Math.random() * window.innerWidth,
+            y: rect.bottom,
+            size: Math.random() * 2.5 + 1,
+            speedX: (Math.random() - 0.5) * 1.2,
+            speedY: Math.random() * 1.5 + 0.5,
+            life: 1,
+            decay: Math.random() * 0.025 + 0.02
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const rect = loader.getBoundingClientRect();
+
+        // Create particles only while the red panel is sliding away
+        if (
+            rect.bottom > 0 &&
+            rect.bottom < window.innerHeight
+        ) {
+            for (let i = 0; i < 2; i++) {
+                createParticle();
+            }
         }
 
-        const element = document.createElement("div");
+        particles = particles.filter(particle => {
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+            particle.life -= particle.decay;
 
-        element.className = "loader-particle";
+            if (particle.life <= 0) {
+                return false;
+            }
 
-        element.style.left = `${particle.x}px`;
-        element.style.top = `${particle.y}px`;
-        element.style.width = `${particle.size}px`;
-        element.style.height = `${particle.size}px`;
-        element.style.opacity = particle.life;
+            ctx.beginPath();
+            ctx.arc(
+                particle.x,
+                particle.y,
+                particle.size,
+                0,
+                Math.PI * 2
+            );
 
-        document.body.appendChild(element);
+            ctx.fillStyle = `rgba(255, 255, 255, ${particle.life})`;
+            ctx.fill();
 
-        setTimeout(() => {
-            element.remove();
-        }, 50);
-    });
+            return true;
+        });
 
-    requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    animate();
 }
-
-requestAnimationFrame(animate);
