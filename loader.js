@@ -1,5 +1,6 @@
 /* =========================================================
-   PAGE LOADER + DRIPPING / POPPING PARTICLES
+   PAGE LOADER
+   SPIRALLING / GRAINY PAINT PARTICLES
    ========================================================= */
 
 const loader = document.querySelector(".page-loader");
@@ -34,13 +35,12 @@ if (!loader) {
 
     const TRAIL_START = 1250;
 
-
     /*
-     * KEEP PARTICLE COUNT LOW
+     * VERY FEW PARTICLES
      */
     const PARTICLES_PER_FRAME = 1;
 
-    const MAX_PARTICLES = 45;
+    const MAX_PARTICLES = 38;
 
 
     let particles = [];
@@ -80,181 +80,6 @@ if (!loader) {
 
 
     /* =====================================================
-       CREATE PARTICLE
-       ===================================================== */
-
-    function createParticle(edgeY) {
-
-        if (
-            edgeY < -40 ||
-            edgeY > window.innerHeight + 40
-        ) {
-            return;
-        }
-
-
-        /* =================================================
-           SIZE
-           ================================================= */
-
-        let size;
-
-        const randomSize =
-            Math.random();
-
-
-        if (randomSize < 0.42) {
-
-            /*
-             * Normal particles
-             */
-            size =
-                Math.random() * 4 + 4;
-
-        } else if (randomSize < 0.78) {
-
-            /*
-             * Larger particles
-             */
-            size =
-                Math.random() * 8 + 7;
-
-        } else if (randomSize < 0.95) {
-
-            /*
-             * Big chunks
-             */
-            size =
-                Math.random() * 12 + 12;
-
-        } else {
-
-            /*
-             * RARE HUGE CHUNK
-             *
-             * These should feel like actual
-             * pieces breaking from the red line.
-             */
-            size =
-                Math.random() * 14 + 22;
-        }
-
-
-        /* =================================================
-           INITIAL MOMENTUM
-           ================================================= */
-
-        particles.push({
-
-            x:
-                Math.random() *
-                window.innerWidth,
-
-            y:
-                edgeY,
-
-
-            /* ---------------------------------------------
-               SIZE
-               --------------------------------------------- */
-
-            size:
-                size,
-
-
-            /* ---------------------------------------------
-               SHAPE
-               --------------------------------------------- */
-
-            scaleX:
-                0.45,
-
-            scaleY:
-                2.5,
-
-
-            /* ---------------------------------------------
-               INERTIA
-               --------------------------------------------- */
-
-            /*
-             * Strong initial downward velocity.
-             */
-            velocityY:
-                Math.random() * 2.5 + 5.5,
-
-            /*
-             * Slight sideways movement.
-             */
-            velocityX:
-                (Math.random() - 0.5) * 1.2,
-
-
-            /*
-             * How quickly the initial velocity
-             * is lost.
-             *
-             * Higher = more inertia.
-             */
-            friction:
-                0.91,
-
-
-            /*
-             * Tiny gravity.
-             *
-             * This keeps the particle moving after
-             * the initial burst without making it
-             * constantly fall.
-             */
-            gravity:
-                Math.random() * 0.025 + 0.015,
-
-
-            /* ---------------------------------------------
-               PHASE TIMING
-               --------------------------------------------- */
-
-            stretchTime:
-                Math.random() * 5 + 5,
-
-            settleTime:
-                Math.random() * 7 + 6,
-
-            lingerTime:
-                Math.random() * 20 + 30,
-
-            popTime:
-                7,
-
-
-            phase:
-                "stretch",
-
-            phaseTime:
-                0,
-
-
-            opacity:
-                1
-        });
-    }
-
-
-    /* =====================================================
-       GET RED LOADER EDGE
-       ===================================================== */
-
-    function getLoaderEdge() {
-
-        const rect =
-            loader.getBoundingClientRect();
-
-        return rect.top;
-    }
-
-
-    /* =====================================================
        EASING
        ===================================================== */
 
@@ -281,6 +106,276 @@ if (!loader) {
 
 
     /* =====================================================
+       CREATE GRAINY PARTICLE SHAPE
+       ===================================================== */
+
+    function createParticleShape(points) {
+
+        const shape = [];
+
+        for (
+            let i = 0;
+            i < points;
+            i++
+        ) {
+
+            const angle =
+                (
+                    Math.PI * 2
+                ) *
+                (
+                    i / points
+                );
+
+
+            /*
+             * Random radius creates the
+             * rough / grainy perimeter.
+             */
+            const variation =
+                0.72 +
+                Math.random() * 0.45;
+
+
+            shape.push({
+
+                angle:
+                    angle,
+
+                radius:
+                    variation
+            });
+        }
+
+        return shape;
+    }
+
+
+    /* =====================================================
+       CREATE PARTICLE
+       ===================================================== */
+
+    function createParticle(edgeY) {
+
+        if (
+            edgeY < -40 ||
+            edgeY > window.innerHeight + 40
+        ) {
+            return;
+        }
+
+
+        /* =================================================
+           SIZE
+           ================================================= */
+
+        let size;
+
+        const r =
+            Math.random();
+
+
+        if (r < 0.45) {
+
+            /*
+             * Small
+             */
+            size =
+                Math.random() * 4 + 4;
+
+        } else if (r < 0.78) {
+
+            /*
+             * Medium
+             */
+            size =
+                Math.random() * 7 + 7;
+
+        } else if (r < 0.95) {
+
+            /*
+             * Large
+             */
+            size =
+                Math.random() * 11 + 12;
+
+        } else {
+
+            /*
+             * VERY LARGE
+             */
+            size =
+                Math.random() * 15 + 24;
+        }
+
+
+        /* =================================================
+           PARTICLE
+           ================================================= */
+
+        particles.push({
+
+            x:
+                Math.random() *
+                window.innerWidth,
+
+            y:
+                edgeY,
+
+
+            size:
+                size,
+
+
+            /* ---------------------------------------------
+               GRAIN
+               --------------------------------------------- */
+
+            shape:
+                createParticleShape(
+                    Math.floor(
+                        Math.random() * 4
+                    ) + 9
+                ),
+
+
+            /* ---------------------------------------------
+               MOVEMENT
+               --------------------------------------------- */
+
+            /*
+             * Initial downward movement.
+             */
+            velocityX:
+                (Math.random() - 0.5) *
+                2.5,
+
+            velocityY:
+                Math.random() * 3.5 +
+                5.5,
+
+
+            /*
+             * Curved / spiral force.
+             */
+            curve:
+                (Math.random() - 0.5) *
+                0.18,
+
+
+            /*
+             * Direction changes over time.
+             */
+            curveVelocity:
+                (Math.random() - 0.5) *
+                0.025,
+
+
+            /*
+             * Momentum retention.
+             *
+             * Higher = travels farther.
+             */
+            friction:
+                0.965,
+
+
+            /*
+             * Tiny gravity.
+             */
+            gravity:
+                Math.random() *
+                0.025 +
+                0.015,
+
+
+            /* ---------------------------------------------
+               ROTATION
+               --------------------------------------------- */
+
+            rotation:
+                Math.random() *
+                Math.PI *
+                2,
+
+            rotationSpeed:
+                (Math.random() - 0.5) *
+                0.08,
+
+
+            /* ---------------------------------------------
+               PHASES
+               --------------------------------------------- */
+
+            phase:
+                "travel",
+
+            phaseTime:
+                0,
+
+
+            /*
+             * Long travel.
+             */
+            travelTime:
+                Math.random() * 12 +
+                15,
+
+
+            /*
+             * Become round.
+             */
+            settleTime:
+                Math.random() * 7 +
+                7,
+
+
+            /*
+             * Stay suspended.
+             */
+            lingerTime:
+                Math.random() * 25 +
+                35,
+
+
+            /*
+             * Pop.
+             */
+            popTime:
+                7,
+
+
+            /* ---------------------------------------------
+               SHAPE
+               --------------------------------------------- */
+
+            scaleX:
+                0.45,
+
+            scaleY:
+                2.5,
+
+
+            opacity:
+                1
+        });
+    }
+
+
+    /* =====================================================
+       GET MOVING RED EDGE
+       ===================================================== */
+
+    function getLoaderEdge() {
+
+        const rect =
+            loader.getBoundingClientRect();
+
+        return rect.top;
+    }
+
+
+    /* =====================================================
        UPDATE PARTICLES
        ===================================================== */
 
@@ -295,18 +390,39 @@ if (!loader) {
 
 
                 /* =================================================
-                   PHASE 1 — BREAK AWAY
+                   PHASE 1 — TRAVEL / SPIRAL
                    ================================================= */
 
                 if (
-                    particle.phase === "stretch"
+                    particle.phase === "travel"
                 ) {
 
                     /*
-                     * INERTIA IS THE MAIN MOVEMENT HERE.
+                     * ---------------------------------------------
+                     * CURVED MOTION
+                     * ---------------------------------------------
+                     */
+
+                    /*
+                     * Change horizontal velocity
+                     * based on the particle's curve.
+                     */
+                    particle.velocityX +=
+                        particle.curve;
+
+
+                    /*
+                     * Slowly change the curve itself.
                      *
-                     * Particle initially moves quickly,
-                     * carrying momentum away from the line.
+                     * This creates a subtle
+                     * spiralling / wandering path.
+                     */
+                    particle.curve +=
+                        particle.curveVelocity;
+
+
+                    /*
+                     * Move.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -316,43 +432,77 @@ if (!loader) {
 
 
                     /*
-                     * Stretch while it is being
-                     * pulled away.
+                     * Momentum decay.
+                     *
+                     * MUCH slower than the previous
+                     * version.
                      */
-                    const progress =
-                        Math.min(
-                            1,
-                            particle.phaseTime /
-                            particle.stretchTime
-                        );
+                    particle.velocityX *=
+                        particle.friction;
 
-
-                    particle.scaleY =
-                        2.5 +
-                        progress * 2.5;
-
-                    particle.scaleX =
-                        0.45 -
-                        progress * 0.12;
-
-
-                    /*
-                     * DON'T kill the momentum too quickly.
-                     */
                     particle.velocityY *=
                         particle.friction;
 
+
+                    /*
+                     * Small gravitational influence.
+                     */
                     particle.velocityY +=
                         particle.gravity;
 
 
-                    particle.velocityX *=
-                        0.97;
+                    /*
+                     * Rotate as it travels.
+                     */
+                    particle.rotation +=
+                        particle.rotationSpeed;
 
 
+                    /* ---------------------------------------------
+                       STRETCH BASED ON SPEED
+                       --------------------------------------------- */
+
+                    const speed =
+                        Math.sqrt(
+                            particle.velocityX *
+                            particle.velocityX +
+                            particle.velocityY *
+                            particle.velocityY
+                        );
+
+
+                    /*
+                     * Fast = stretched.
+                     * Slow = round.
+                     */
+                    const stretch =
+                        Math.min(
+                            4.5,
+                            1 +
+                            speed * 0.42
+                        );
+
+
+                    particle.scaleY =
+                        stretch;
+
+                    particle.scaleX =
+                        Math.max(
+                            0.32,
+                            1 -
+                            (
+                                speed *
+                                0.055
+                            )
+                        );
+
+
+                    /*
+                     * End travel.
+                     */
                     if (
                         particle.phaseTime >=
-                        particle.stretchTime
+                        particle.travelTime
                     ) {
 
                         particle.phase =
@@ -365,7 +515,7 @@ if (!loader) {
 
 
                 /* =================================================
-                   PHASE 2 — INERTIA + BECOMING ROUND
+                   PHASE 2 — SETTLE
                    ================================================= */
 
                 else if (
@@ -373,7 +523,7 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Continue carrying momentum.
+                     * Continue moving.
                      */
                     particle.x +=
                         particle.velocityX;
@@ -383,19 +533,22 @@ if (!loader) {
 
 
                     /*
-                     * Gradually kill the momentum.
-                     *
-                     * This is what gives the effect
-                     * that the particle has weight.
+                     * Continue losing momentum.
                      */
+                    particle.velocityX *=
+                        0.88;
+
                     particle.velocityY *=
                         0.88;
 
-                    particle.velocityY +=
-                        particle.gravity * 0.5;
 
-                    particle.velocityX *=
-                        0.92;
+                    particle.velocityY +=
+                        particle.gravity *
+                        0.35;
+
+
+                    particle.rotation +=
+                        particle.rotationSpeed;
 
 
                     const progress =
@@ -407,20 +560,27 @@ if (!loader) {
 
 
                     /*
-                     * Stretch → round
+                     * Long → round.
                      */
-                    particle.scaleY =
-                        5 -
+                    const stretch =
+                        1 +
                         (
-                            4 *
-                            easeOut(progress)
+                            3.5 *
+                            (
+                                1 -
+                                easeOut(progress)
+                            )
                         );
 
 
+                    particle.scaleY =
+                        stretch;
+
+
                     particle.scaleX =
-                        0.33 +
+                        0.45 +
                         (
-                            0.67 *
+                            0.55 *
                             easeOut(progress)
                         );
 
@@ -438,12 +598,12 @@ if (!loader) {
 
 
                         /*
-                         * Freeze its final position.
+                         * Stop it completely.
                          */
-                        particle.velocityY =
+                        particle.velocityX =
                             0;
 
-                        particle.velocityX =
+                        particle.velocityY =
                             0;
 
 
@@ -465,13 +625,13 @@ if (!loader) {
                 ) {
 
                     /*
-                     * Completely still.
-                     *
-                     * This creates the suspended
-                     * "floating chunk" effect.
+                     * Completely suspended.
                      */
-                    particle.scaleX = 1;
-                    particle.scaleY = 1;
+                    particle.scaleX =
+                        1;
+
+                    particle.scaleY =
+                        1;
 
 
                     if (
@@ -504,12 +664,11 @@ if (!loader) {
                         );
 
 
-                    /*
-                     * Very fast collapse.
-                     */
                     const pop =
                         1 -
-                        easeInOut(progress);
+                        easeInOut(
+                            progress
+                        );
 
 
                     particle.scaleX =
@@ -520,17 +679,20 @@ if (!loader) {
 
 
                     /*
-                     * Fade only near the end.
+                     * Slightly irregular fade.
                      */
                     if (
-                        progress > 0.65
+                        progress > 0.55
                     ) {
 
                         particle.opacity =
                             1 -
                             (
-                                (progress - 0.65) /
-                                0.35
+                                (
+                                    progress -
+                                    0.55
+                                ) /
+                                0.45
                             );
                     }
 
@@ -558,22 +720,60 @@ if (!loader) {
                 );
 
 
+                ctx.rotate(
+                    particle.rotation
+                );
+
+
                 ctx.scale(
                     particle.scaleX,
                     particle.scaleY
                 );
 
 
+                /*
+                 * DRAW IRREGULAR / GRAINY EDGE
+                 */
                 ctx.beginPath();
 
 
-                ctx.arc(
-                    0,
-                    0,
-                    particle.size,
-                    0,
-                    Math.PI * 2
+                particle.shape.forEach(
+                    (point, index) => {
+
+                        const x =
+                            Math.cos(
+                                point.angle
+                            ) *
+                            particle.size *
+                            point.radius;
+
+                        const y =
+                            Math.sin(
+                                point.angle
+                            ) *
+                            particle.size *
+                            point.radius;
+
+
+                        if (index === 0) {
+
+                            ctx.moveTo(
+                                x,
+                                y
+                            );
+
+                        } else {
+
+                            ctx.lineTo(
+                                x,
+                                y
+                            );
+                        }
+                    }
                 );
+
+
+                ctx.closePath();
 
 
                 ctx.fillStyle =
@@ -603,6 +803,7 @@ if (!loader) {
     function animate(timestamp) {
 
         if (startTime === null) {
+
             startTime =
                 timestamp;
         }
@@ -626,7 +827,7 @@ if (!loader) {
 
 
         /* ---------------------------------------------
-           EMIT PARTICLES
+           EMIT
            --------------------------------------------- */
 
         if (
@@ -649,7 +850,9 @@ if (!loader) {
                     i++
                 ) {
 
-                    createParticle(edgeY);
+                    createParticle(
+                        edgeY
+                    );
                 }
             }
         }
