@@ -677,3 +677,56 @@ if (!loader) {
         }
     );
 }
+
+/* =========================================================
+   CUSTOM CURSOR
+   ========================================================= */
+
+if (window.matchMedia("(pointer: fine)").matches) {
+
+    const cursor = document.createElement("div");
+
+    cursor.className = "custom-cursor";
+
+    document.body.appendChild(cursor);
+
+
+    /* ---------------------------------------------
+       MOVE CURSOR
+       --------------------------------------------- */
+
+    document.addEventListener("mousemove", function (event) {
+
+        cursor.style.left =
+            event.clientX + "px";
+
+        cursor.style.top =
+            event.clientY + "px";
+
+    });
+
+
+    /* ---------------------------------------------
+       LINK HOVER
+       --------------------------------------------- */
+
+    const links =
+        document.querySelectorAll("a");
+
+    links.forEach(function (link) {
+
+        link.addEventListener("mouseenter", function () {
+
+            cursor.classList.add("cursor-link");
+
+        });
+
+        link.addEventListener("mouseleave", function () {
+
+            cursor.classList.remove("cursor-link");
+
+        });
+
+    });
+
+}
