@@ -51,7 +51,7 @@ main {
     width: 100%;
     min-height: 100vh;
 
-    padding: 64px;
+     padding: 264px 64px 64px;
 
     text-align: center;
 }
@@ -209,7 +209,7 @@ main {
 @media (max-width: 767px) {
 
     main {
-        padding: 20px;
+         padding: 264px 64px 64px;
 
         text-align: center;
     }
