@@ -765,3 +765,54 @@ document.querySelectorAll("a").forEach(function (link) {
     });
 
 });
+
+/* =========================================================
+   BROWSER BACK / FORWARD
+   ========================================================= */
+
+window.addEventListener("pageshow", function (event) {
+
+    /*
+     * If the page was restored from browser history,
+     * reset the page and replay the loader animation.
+     */
+    if (event.persisted) {
+
+        document.body.classList.remove("page-exiting");
+
+        const loader =
+            document.querySelector(".page-loader");
+
+        if (loader) {
+
+            loader.style.display = "";
+            loader.style.animation = "none";
+
+            /*
+             * Force the browser to recognize
+             * the animation reset.
+             */
+            void loader.offsetWidth;
+
+            loader.style.animation = "";
+
+        }
+
+        const content =
+            document.querySelectorAll(
+                "main, .back_nav"
+            );
+
+        content.forEach(function (element) {
+
+            element.style.animation = "none";
+            element.style.opacity = "0";
+
+            void element.offsetWidth;
+
+            element.style.animation = "";
+
+        });
+    }
+
+});
